@@ -1,5 +1,3 @@
-import sqlalchemy
-from src import database as db
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
@@ -38,5 +36,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             "sku": "SMALL_RED_BARREL",
             "quantity": 1,
         }
+def purchase_barrels(list[Barrel]):
+            if Barrel <10
+        return get_wholesale_purchase_plan(wholesale_catalog)
+        
+        
     ]
 
