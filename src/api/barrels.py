@@ -37,7 +37,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             "quantity": 1,
         }
 def purchase_barrels(list[Barrel]):
-            if Barrel <10
+            if Barrel <10:
         return get_wholesale_purchase_plan(wholesale_catalog)
         
         
