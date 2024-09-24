@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
 
 router = APIRouter()
 
