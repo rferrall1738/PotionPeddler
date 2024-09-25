@@ -9,12 +9,5 @@ def database_connection_url():
 
 engine = create_engine(database_connection_url(), pool_pre_ping=True)
 
-with engine.begin() as connection:
-    result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-    
-    for row in result:
-        print(row)
-        
-    connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = '300'))
     
 
