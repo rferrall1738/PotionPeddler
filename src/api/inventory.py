@@ -11,11 +11,24 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+class Purchase_Capacity(BaseModel):
+
+    potion_capacity:int
+    ml_capacity: int
+
+
+
 @router.get("/audit")
 def get_inventory():
-    """ """
+
+    audit_sql="""
+    SELECT num_green_potions, num_green_ml,gold
+    FROM global_inventory  """
     
-    return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
+    with db.engine.begin() as connection:
+        result= connection.execute(sqlalchemy.text(audit_sql))
+        inventory = result.fetchone()
+    return {"number_of_potions": inventory['num_green_potion'], "ml_in_barrels": inventory['num_green_ml'], "gold": inventory['gold']}
 
 # Gets called once a day
 @router.post("/plan")
@@ -26,12 +39,30 @@ def get_capacity_plan():
     """
     potion_capacity = 50
     ml_capacity = 10000
+    capacity_cost = 1000
 
-    
+    execute_sql = """
+    SELECT num_green_potions, num_green_ml, gold
+    FROM global_inventory
+
+    """
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(execute_sql))
+        capacity = result.fetchone()
+        if capacity:
+            inventory_sum = capacity['num_green_potions']
+            ml_sum = capacity['num_green_ml']
+            gold = capacity['gold']
+
+            extra_cost_potion_capacity = max(0,math.ceil((inventory_sum -potion_capacity)/ potion_capacity))
+            extra_cost_ml_capacity = max(0,math.ceil((ml_sum - ml_capacity)/ ml_capacity ))
+
+            cost_potion_capacity = extra_cost_potion_capacity * capacity_cost
+            cost_ml_capacity = extra_cost_ml_capacity * capacity_cost
 
     return {
-        "potion_capacity": 0,
-        "ml_capacity": 0
+        "potion_capacity": potion_capacity + extra_cost_potion_capacity ,
+        "ml_capacity": ml_capacity + extra_cost_ml_capacity
         }
 
 class CapacityPurchase(BaseModel):
@@ -47,6 +78,9 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     """
     potion_capacity = 50
     ml_capacity = 10000
+    capacity_cost = 1000
+
+
 
     
     return "OK"
