@@ -4,8 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
 from enum import Enum
-with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+
 
 router = APIRouter(
     prefix="/carts",
@@ -78,7 +77,10 @@ class Customer(BaseModel):
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
-    """
+
+    execute_sql = """
+    SELECT customer_name, character_class, level
+    FROM global_inventory
     Which customers visited the shop today?
     """
     print(customers)

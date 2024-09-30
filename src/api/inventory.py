@@ -28,7 +28,7 @@ def get_inventory():
     with db.engine.begin() as connection:
         result= connection.execute(sqlalchemy.text(audit_sql))
         inventory = result.fetchone()
-    return {"number_of_potions": inventory['num_green_potion'], "ml_in_barrels": inventory['num_green_ml'], "gold": inventory['gold']}
+    return {"number_of_potions": inventory['num_green_potions'], "ml_in_barrels": inventory['num_green_ml'], "gold": inventory['gold']}
 
 # Gets called once a day
 @router.post("/plan")
@@ -41,13 +41,10 @@ def get_capacity_plan():
     ml_capacity = 10000
     capacity_cost = 1000
 
-    execute_sql = """
-    SELECT num_green_potions, num_green_ml, gold
-    FROM global_inventory
-
-    """
+   
+    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(execute_sql))
+        result = connection.execute(sqlalchemy.text("SELECT( num_green_potions,num_green_ml,gold) FROM global_inventory"))
         capacity = result.fetchone()
         if capacity:
             inventory_sum = capacity['num_green_potions']

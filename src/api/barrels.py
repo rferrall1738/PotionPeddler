@@ -27,20 +27,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
         potion_type = barrel.potion_type[0]
 
-        sql_to_execute = """
-        UPDATE sql_to_execute
-        SET quantity = quantity + :quantity
-        WHERE potion_type = :potion_type
-        """
+
 
 
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(sql_to_execute)),{
+            result = connection.execute(sqlalchemy.text(" UPDATE global_inventory SET num_green_ml = num_green_ml + total_ml WHERE potion_type = :potion_type "),{
             "potion_type": potion_type,
-            "quantity": barrel.quantity,
-            "volume_per_potion": barrel.ml_per_barrel
+            "total_ml" : total_ml
             }
-
+            )
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
@@ -49,7 +44,28 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 # Gets called once a day
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
-    """ """
+    
+    purchase_plan =[]
+
+    with db.engine.begin as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml  FROM global_inventory "))
+        inventory = result.fetchone()
+
+        if inventory:
+            num_green_potions = inventory['num_green_potions']
+            num_green_potions = inventory['num_green_ml']
+
+            if num_green_ml > 0:
+                potion_mixer = num_green_ml // 100
+                mod_potion = num_green_ml % 100
+
+    
+                connection.execute(sqlalchemy.text("UPDATE global_inventory  SET num_green_potions = num_green_potions + :potion_mixer,   num_green_ml = : mod_potion WHERE potion_type = 1;"){
+                    "potion_mixer": potion_mixer
+                    "mod_potion" : mod_potion
+                }
+                )
+
     print(wholesale_catalog)
 
     return [
