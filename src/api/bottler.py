@@ -21,7 +21,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
  
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT (potion_type, quantity) FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("UPDATE global_inventory, SET quantity = quantity +: quantity, WHERE potion_type = :potion_type"),{
+                    "quantity": potion.quantity,
+                    "potion_type": potion.potion_type
+                    })
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
     return "OK"
@@ -31,6 +34,19 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
+    with db.engine.begin() as connection:
+        bottle_plan = connection.execute(sqlalchemy.text("SELECTnum_green_ml, FROM global_inventory"))
+
+        inventory = bottle_plan.fetchone()
+
+        if inventory:
+            num_green_ml = inventory['num_green_ml']
+
+            if num_green_ml > 0:
+                bottler = num_green_ml // 100
+                bottler_mod = num_green_ml % 100
+
+                connection.execute(sqlalchemy.text("UPDATE global_inventory, SET num_green_potions = num_green_potions + :bottler, num_green_ml = :bottler_mod, WHERE potion_type = 1"))
 
 
     # Each bottle has a quantity of what proportion of red, blue, and
@@ -39,10 +55,11 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into red potions.
 
+
     return [
             {
                 "potion_type": [100, 0, 0, 0],
-                "quantity": 5,
+                "quantity": bottler,
             }
         ]
 

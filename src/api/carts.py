@@ -54,6 +54,10 @@ def search_orders(
     Your results must be paginated, the max results you can return at any
     time is 5 total line items.
     """
+    items_per_page = 5
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT customer_name, item_sku,(price * quantity)AS line_item_total,timestamp, FROM cart_items"))
 
     return {
         "previous": "",
@@ -77,10 +81,7 @@ class Customer(BaseModel):
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
-
-    execute_sql = """
-    SELECT customer_name, character_class, level
-    FROM global_inventory
+    """
     Which customers visited the shop today?
     """
     print(customers)
@@ -111,5 +112,9 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("SELECT SUM(price*quantity) AS total_gold FROM cart_items WHERE cart_id = : cart_id AND item_sku = 'GREEN_POTION'"),{
+            "cart_id" : cart_id })
+          
+        
     return {"total_potions_bought": 1, "total_gold_paid": 50}

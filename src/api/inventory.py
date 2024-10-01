@@ -21,12 +21,9 @@ class Purchase_Capacity(BaseModel):
 @router.get("/audit")
 def get_inventory():
 
-    audit_sql="""
-    SELECT num_green_potions, num_green_ml,gold
-    FROM global_inventory  """
     
     with db.engine.begin() as connection:
-        result= connection.execute(sqlalchemy.text(audit_sql))
+        result= connection.execute(sqlalchemy.text("SELECT (num_green_potions, num_green_ml, gold), FROM global_inventory"))
         inventory = result.fetchone()
     return {"number_of_potions": inventory['num_green_potions'], "ml_in_barrels": inventory['num_green_ml'], "gold": inventory['gold']}
 

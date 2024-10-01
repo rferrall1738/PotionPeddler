@@ -7,20 +7,20 @@ router = APIRouter()
 
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():
-    execute_sql ="""
-    SELECT sku, name, quantity, price, potion_type
-    FROM global_inventory
-    Each unique item combination must have only a single price.
-    """
+   
     with db.engine.begin() as connection:
-          result = connection.execute(sqlalchemy.text(execute_sql))
+        result = connection.execute(sqlalchemy.text("SELECT (sku,name, quantity,price,potion_type), FROM global_inventory"))
+        items= result.fetchall()
 
-    return [
-            {
-                "sku": "RED_POTION_0",
-                "name": "red potion",
-                "quantity": 1,
-                "price": 50,
-                "potion_type": [100, 0, 0, 0],
-            }
-        ]
+        catalog =[]
+
+        for item in items:
+            catalog.append({
+                "sku": item.sku,
+                "name": item.name,
+                "quantity": item.quantity,
+                "price": item.price,
+                "potion_type": item.potion_type,
+
+            })
+        return catalog
