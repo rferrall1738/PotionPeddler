@@ -70,7 +70,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     "ml_per_barrel": barrels["SMALL_GREEN_BARREL"]["ml_per_barrel"],
                     "price": barrels["SMALL_GREEN_BARREL"]["price"]})
 
-                    connection.execute(sqlalchemy.text("""UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + :ml_per_barrel"""),
+                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + :ml_per_barrel"),
                         {
                         "barrel_price": barrels["SMALL_GREEN_BARREL"]["price"],
                         "ml_per_barrel": barrels["SMALL_GREEN_BARREL"]["price"]
@@ -85,7 +85,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "ml_per_barrel": barrels["MINI_GREEN_BARREL"]["ml_per_barrel"],
                         "price": barrels["MINI_GREEN_BARREL"]["price"]})
 
-                    connection.execute(sqlalchemy.text("""UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + : ml_per_barrel"""),
+                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + : ml_per_barrel"),
                         {
                         "barrel_price" : barrels["MINI_GREEN_BARREL"]["price"],
                         "ml_per_barrel" : barrels["MINI_GREEN_BARREL"]["ml_per_barrel"]
@@ -99,7 +99,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 mod_potion = num_green_ml % 100
 
     
-                invent = connection.execute(sqlalchemy.text("UPDATE global_inventory  SET (num_green_potions = num_green_potions + :potion_mixer),   (num_green_ml = : mod_potion WHERE potion_type = 1;")
+                invent = connection.execute(sqlalchemy.text("UPDATE global_inventory  SET (num_green_potions = num_green_potions + :potion_mixer),   (num_green_ml = : mod_potion WHERE potion_type = 1;"),
                 {
                     "potion_mixer": potion_mixer,
                     "mod_potion" : mod_potion

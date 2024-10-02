@@ -48,11 +48,10 @@ def get_bottle_plan():
                 bottler = num_green_ml // potion_ml
                 bottler_mod = num_green_ml % potion_ml
 
-                connection.execute(sqlalchemy.text("""UPDATE global_inventory SET num_green_potions = num_green_potions + :bottler, num_green_ml = :bottler_mod WHERE potion_type = 1"""),
-                    {
-                    "bottler": bottler
-                    "bottler_mod": bottler_mod
-                    })
+                result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :bottler, num_green_ml = :bottler_mod WHERE potion_type = 1"),{
+                    "bottler": bottler,
+                    "bottler_mod": botter_mod
+                })
 
 
     # Each bottle has a quantity of what proportion of red, blue, and
