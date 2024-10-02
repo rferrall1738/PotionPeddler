@@ -57,7 +57,7 @@ def search_orders(
     items_per_page = 5
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT customer_name, item_sku,(price * quantity)AS line_item_total,timestamp, FROM cart_items"))
+        result = connection.execute(sqlalchemy.text("SELECT customer_name, item_sku,(price * quantity)AS line_item_total,timestamp FROM cart_items"))
 
     return {
         "previous": "",

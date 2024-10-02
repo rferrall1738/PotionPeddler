@@ -23,7 +23,7 @@ def get_inventory():
 
     
     with db.engine.begin() as connection:
-        result= connection.execute(sqlalchemy.text("SELECT (num_green_potions, num_green_ml, gold), FROM global_inventory"))
+        result= connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
         inventory = result.fetchone()
     return {"number_of_potions": inventory['num_green_potions'], "ml_in_barrels": inventory['num_green_ml'], "gold": inventory['gold']}
 
@@ -41,7 +41,7 @@ def get_capacity_plan():
    
     
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT( num_green_potions,num_green_ml,gold) FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions,num_green_ml,gold FROM global_inventory"))
         capacity = result.fetchone()
         if capacity:
             inventory_sum = capacity['num_green_potions']

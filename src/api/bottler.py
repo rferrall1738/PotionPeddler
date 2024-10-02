@@ -21,7 +21,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
  
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("UPDATE global_inventory, SET quantity = quantity +: quantity, WHERE potion_type = :potion_type"),{
+        result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET quantity = quantity +: quantity WHERE potion_type = :potion_type"),{
                     "quantity": potion.quantity,
                     "potion_type": potion.potion_type
                     })
@@ -34,19 +34,25 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
-    with db.engine.begin() as connection:
-        bottle_plan = connection.execute(sqlalchemy.text("SELECTnum_green_ml, FROM global_inventory"))
+    potion_ml = 100
+    bottler = 0
 
+    with db.engine.begin() as connection:
+        bottle_plan = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions FROM global_inventory"))
         inventory = bottle_plan.fetchone()
 
         if inventory:
             num_green_ml = inventory['num_green_ml']
 
             if num_green_ml > 0:
-                bottler = num_green_ml // 100
-                bottler_mod = num_green_ml % 100
+                bottler = num_green_ml // potion_ml
+                bottler_mod = num_green_ml % potion_ml
 
-                connection.execute(sqlalchemy.text("UPDATE global_inventory, SET num_green_potions = num_green_potions + :bottler, num_green_ml = :bottler_mod, WHERE potion_type = 1"))
+                connection.execute(sqlalchemy.text("""UPDATE global_inventory SET num_green_potions = num_green_potions + :bottler, num_green_ml = :bottler_mod WHERE potion_type = 1"""),
+                    {
+                    "bottler": bottler
+                    "bottler_mod": bottler_mod
+                    })
 
 
     # Each bottle has a quantity of what proportion of red, blue, and
@@ -58,7 +64,7 @@ def get_bottle_plan():
 
     return [
             {
-                "potion_type": [100, 0, 0, 0],
+                "potion_type": [0, 100, 0, 0],
                 "quantity": bottler,
             }
         ]

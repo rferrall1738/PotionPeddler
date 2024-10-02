@@ -47,16 +47,52 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
     purchase_plan =[]
 
+    barrels = {"MINI_GREEN_BARREL": {"ml_per_barrel": 200,"price":60},
+               "SMALL_GREEN_BARREL":{"ml_per_barrel": 500,"price":100},
+               "MEDIUM_GREEN_BARREL":{"ml_per_barrel": 2500,"price":250}}
+    
+#looks at what i got in the inventory
     with db.engine.begin as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml  FROM global_inventory "))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold  FROM global_inventory "))
         inventory = result.fetchone()
 
         if inventory:
             num_green_potions = inventory['num_green_potions']
             num_green_ml = inventory['num_green_ml']
+            gold = inventory['gold']
 
             if num_green_potions < 10:
-                purchase_plan.append("sku": "SMALL_GREEN_BARREL","quantity":1)
+                if gold >= barrels["SMALL_GREEN_BARREL"]["price"]:
+
+                    purchase_plan.append({
+                    "sku": "SMALL_GREEN_BARREL",
+                    "quantity": 1,
+                    "ml_per_barrel": barrels["SMALL_GREEN_BARREL"]["ml_per_barrel"],
+                    "price": barrels["SMALL_GREEN_BARREL"]["price"]})
+
+                    connection.execute(sqlalchemy.text("""UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + :ml_per_barrel"""),
+                        {
+                        "barrel_price": barrels["SMALL_GREEN_BARREL"]["price"],
+                        "ml_per_barrel": barrels["SMALL_GREEN_BARREL"]["price"]
+                    })
+                    
+                
+                elif gold >= barrels["MINI_GREEN_BARREL"]["price"]:
+
+                    purchase_plan.append({
+                        "sku": "MINI_GREEN_BARREL",
+                        "quantity": 1,
+                        "ml_per_barrel": barrels["MINI_GREEN_BARREL"]["ml_per_barrel"],
+                        "price": barrels["MINI_GREEN_BARREL"]["price"]})
+
+                    connection.execute(sqlalchemy.text("""UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + : ml_per_barrel"""),
+                        {
+                        "barrel_price" : barrels["MINI_GREEN_BARREL"]["price"],
+                        "ml_per_barrel" : barrels["MINI_GREEN_BARREL"]["ml_per_barrel"]
+                        })
+                    
+
+            
 
             if num_green_ml > 0:
                 potion_mixer = num_green_ml // 100

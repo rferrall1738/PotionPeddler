@@ -9,7 +9,7 @@ router = APIRouter()
 def get_catalog():
    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT (sku,name, quantity,price,potion_type), FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT sku,name, quantity,price,potion_type FROM global_inventory"))
         items= result.fetchall()
 
         catalog =[]
