@@ -29,11 +29,11 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
 
 
-
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(" UPDATE global_inventory SET num_green_ml = num_green_ml + total_ml WHERE potion_type = 1 "),{
-            "potion_type": potion_type,
-            "total_ml" : total_ml
+        if barrel.potion_type == [0,1,0,0]:
+            with db.engine.begin() as connection:
+             result = connection.execute(sqlalchemy.text(" UPDATE global_inventory SET num_green_ml = num_green_ml + total_ml WHERE potion_type = 1 "),{
+             "potion_type": potion_type,
+             "total_ml" : total_ml
             }
             )
 

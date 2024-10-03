@@ -20,7 +20,7 @@ def get_catalog():
                 "name": item.name,
                 "quantity": item.quantity,
                 "price": item.price,
-                "potion_type": item.potion_type,
+                "potion_type": [0,1,0,0],
 
             })
         return catalog
