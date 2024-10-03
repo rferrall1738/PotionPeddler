@@ -49,11 +49,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     barrels = {"MINI_GREEN_BARREL": {"ml_per_barrel": 200,"price":60},
                "SMALL_GREEN_BARREL":{"ml_per_barrel": 500,"price":100},
-               "MEDIUM_GREEN_BARREL":{"ml_per_barrel": 2500,"price":250}}
+               "MEDIUM_GREEN_BARREL":{"ml_per_barrel": 2500,"price":250}
+               }
     
 #looks at what i got in the inventory
     with db.engine.begin as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold  FROM global_inventory "))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory "))
         inventory = result.fetchone()
 
         if inventory:

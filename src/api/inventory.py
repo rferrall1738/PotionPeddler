@@ -74,7 +74,5 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     ml_capacity = 10000
     capacity_cost = 1000
 
-
-
     
     return "OK"
