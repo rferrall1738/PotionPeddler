@@ -111,20 +111,75 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "barrel_price" : barrels["MINI_GREEN_BARREL"]["price"],
                         "ml_per_barrel" : barrels["MINI_GREEN_BARREL"]["ml_per_barrel"]
                         })
-                    
-            
-            
+                if num_red_potions < 10:
+                    if gold >= barrels["SMALL_RED_BARREL"]["price"]:
+
+                        purchase_plan.append({ "sku": "SMALL_RED_BARREL",
+                        "quantity": 1,
+                        "ml_per_barrel": barrels["SMALL_RED_BARREL"]["ml_per_barrel"],
+                        "price": barrels["SMALL_RED_BARREL"]["price"]
+                    })
+                    connection.execute(sqlalchemy.text(
+                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_red_ml = num_red_ml + :ml_per_barrel"),
+                        {"barrel_price": barrels["SMALL_RED_BARREL"]["price"], "ml_per_barrel": barrels["SMALL_RED_BARREL"]["ml_per_barrel"]}
+                    )
+                elif gold >= barrels["MINI_RED_BARREL"]["price"]:
+                    purchase_plan.append({
+                        "sku": "MINI_RED_BARREL",
+                        "quantity": 1,
+                        "ml_per_barrel": barrels["MINI_RED_BARREL"]["ml_per_barrel"],
+                        "price": barrels["MINI_RED_BARREL"]["price"]
+                    })
+                    connection.execute(sqlalchemy.text(
+                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_red_ml = num_red_ml + :ml_per_barrel"),
+                        {"barrel_price": barrels["MINI_RED_BARREL"]["price"], "ml_per_barrel": barrels["MINI_RED_BARREL"]["ml_per_barrel"]}
+                    )
+
+            if num_blue_potions < 10:
+                if gold >= barrels["SMALL_BLUE_BARREL"]["price"]:
+                    purchase_plan.append({
+                        "sku": "SMALL_BLUE_BARREL",
+                        "quantity": 1,
+                        "ml_per_barrel": barrels["SMALL_BLUE_BARREL"]["ml_per_barrel"],
+                        "price": barrels["SMALL_BLUE_BARREL"]["price"]
+                    })
+                    connection.execute(sqlalchemy.text(
+                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_blue_ml = num_blue_ml + :ml_per_barrel"),
+                        {"barrel_price": barrels["SMALL_BLUE_BARREL"]["price"], "ml_per_barrel": barrels["SMALL_BLUE_BARREL"]["ml_per_barrel"]}
+                    )
+                elif gold >= barrels["MINI_BLUE_BARREL"]["price"]:
+                    purchase_plan.append({
+                        "sku": "MINI_BLUE_BARREL",
+                        "quantity": 1,
+                        "ml_per_barrel": barrels["MINI_BLUE_BARREL"]["ml_per_barrel"],
+                        "price": barrels["MINI_BLUE_BARREL"]["price"]
+                    })
+                    connection.execute(sqlalchemy.text(
+                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_blue_ml = num_blue_ml + :ml_per_barrel"),
+                        {"barrel_price": barrels["MINI_BLUE_BARREL"]["price"], "ml_per_barrel": barrels["MINI_BLUE_BARREL"]["ml_per_barrel"]}
+                    )
 
             if num_green_ml > 0:
                 potion_mixer = num_green_ml // 100
                 mod_potion = num_green_ml % 100
-
-    
-                invent = connection.execute(sqlalchemy.text("UPDATE global_inventory  SET (num_green_potions = num_green_potions + :potion_mixer),   (num_green_ml = : mod_potion WHERE potion_type = 1;"),
-                {
-                    "potion_mixer": potion_mixer,
-                    "mod_potion" : mod_potion
-                }
+                connection.execute(sqlalchemy.text(
+                    "UPDATE global_inventory SET num_green_potions = num_green_potions + :potion_mixer, num_green_ml = :mod_potion"),
+                    {"potion_mixer": potion_mixer, "mod_potion": mod_potion}
                 )
 
+            if num_red_ml > 0:
+                potion_mixer = num_red_ml // 100
+                mod_potion = num_red_ml % 100
+                connection.execute(sqlalchemy.text(
+                    "UPDATE global_inventory SET num_red_potions = num_red_potions + :potion_mixer, num_red_ml = :mod_potion"),
+                    {"potion_mixer": potion_mixer, "mod_potion": mod_potion}
+                )
+
+            if num_blue_ml > 0:
+                potion_mixer = num_blue_ml // 100
+                mod_potion = num_blue_ml % 100
+                connection.execute(sqlalchemy.text(
+                    "UPDATE global_inventory SET num_blue_potions = num_blue_potions + :potion_mixer, num_blue_ml = :mod_potion"),
+                    {"potion_mixer": potion_mixer, "mod_potion": mod_potion}
+                )
     return purchase_plan
