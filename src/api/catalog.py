@@ -15,12 +15,19 @@ def get_catalog():
         catalog =[]
 
         for item in items:
+
+            potion_types = {
+
+                'green': [0,1,0,0],
+                'red': [1,0,0,0],
+                'blue':[0,0,1,0]
+            }
             catalog.append({
                 "sku": item.sku,
                 "name": item.name,
                 "quantity": item.quantity,
                 "price": item.price,
-                "potion_type": [0,1,0,0],
+                "potion_type": potion_types.get(item.potion_type),
 
             })
         return catalog

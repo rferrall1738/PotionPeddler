@@ -25,18 +25,25 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     for barrel in barrels_delivered:
         total_ml = barrel.ml_per_barrel * barrel.quantity
 
-        potion_type = barrel.potion_type[1]
-
-
-
+  
         if barrel.potion_type == [0,1,0,0]:
             with db.engine.begin() as connection:
-             result = connection.execute(sqlalchemy.text(" UPDATE global_inventory SET num_green_ml = num_green_ml + total_ml WHERE potion_type = 1 "),{
-             "potion_type": potion_type,
+             result = connection.execute(sqlalchemy.text(" UPDATE global_inventory SET num_green_ml = num_green_ml + total_ml: total_ml "),{
              "total_ml" : total_ml
             }
             )
-
+        elif barrel.potion_type ==[1,0,0,0]:
+            with db.engine.begin() as connection:
+                result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + total_ml: total_ml ")),{
+                "total_ml" : total_ml
+                }
+        elif barrel.potion_type == [0,0,1,0]:
+            with db.engine.begin() as connection:
+                result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + total_ml: total_ml")),{
+                    "total_ml": total_ml
+                }
+        
+    
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
@@ -49,17 +56,30 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     barrels = {"MINI_GREEN_BARREL": {"ml_per_barrel": 200,"price":60},
                "SMALL_GREEN_BARREL":{"ml_per_barrel": 500,"price":100},
-               "MEDIUM_GREEN_BARREL":{"ml_per_barrel": 2500,"price":250}
+               "MEDIUM_GREEN_BARREL":{"ml_per_barrel": 2500,"price":250},
+
+               "MEDIUM_RED_BARREL":{"ml_per_barrel": 2500,"price":250},
+               "MINI_RED_BARREL": {"ml_per_barrel": 200,"price":60},
+               "SMALL_RED_BARREL":{"ml_per_barrel": 500,"price":100},
+               
+               "MEDIUM_BLUE_BARREL":{"ml_per_barrel": 2500,"price":250},
+               "MINI_BLUE_BARREL": {"ml_per_barrel": 200,"price":60},
+               "SMALL_BLUE_BARREL":{"ml_per_barrel": 500,"price":120},
+
                }
     
 #looks at what i got in the inventory
     with db.engine.begin as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory "))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold FROM global_inventory"))
         inventory = result.fetchone()
 
         if inventory:
             num_green_potions = inventory['num_green_potions']
             num_green_ml = inventory['num_green_ml']
+            num_red_potions = inventory['num_red_potions']
+            num_red_ml = inventory['num_red_ml']
+            num_blue_potions = inventory['num_blue_potions']
+            num_blue_ml = inventory['num_blue_ml']
             gold = inventory['gold']
 
             if num_green_potions < 10:
@@ -92,7 +112,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "ml_per_barrel" : barrels["MINI_GREEN_BARREL"]["ml_per_barrel"]
                         })
                     
-
+            
             
 
             if num_green_ml > 0:
