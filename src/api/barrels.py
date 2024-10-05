@@ -52,134 +52,62 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
-    purchase_plan =[]
+  with db.engine.begin() as connection:
+    result = connection.execute(sqlalchemy.text("""
+            SELECT num_green_potions, num_red_potions, num_blue_potions, gold FROM global_inventory
+        """))
+    inventory = result.fetchone()
 
-    barrels = {"MINI_GREEN_BARREL": {"ml_per_barrel": 200,"price":60},
-               "SMALL_GREEN_BARREL":{"ml_per_barrel": 500,"price":100},
-               "MEDIUM_GREEN_BARREL":{"ml_per_barrel": 2500,"price":250},
+    num_green_potions = inventory['num_green_potions']
+    num_red_potions = inventory['num_red_potions']
+    num_blue_potions = inventory['num_blue_potions']
+    gold = inventory['gold']
 
-               "MEDIUM_RED_BARREL":{"ml_per_barrel": 2500,"price":250},
-               "MINI_RED_BARREL": {"ml_per_barrel": 200,"price":60},
-               "SMALL_RED_BARREL":{"ml_per_barrel": 500,"price":100},
-               
-               "MEDIUM_BLUE_BARREL":{"ml_per_barrel": 2500,"price":250},
-               "MINI_BLUE_BARREL": {"ml_per_barrel": 200,"price":60},
-               "SMALL_BLUE_BARREL":{"ml_per_barrel": 500,"price":120},
+    purchase_plan = []
 
-               }
-    
-#looks at what i got in the inventory
-    with db.engine.begin as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold FROM global_inventory"))
-        inventory = result.fetchone()
+    # green one first 
+    if num_green_potions < 10:
+        if gold >= 400:
+            purchase_plan.append({"sku": "LARGE_GREEN_BARREL", "quantity": 1})
+            gold -= 400
+        elif gold >= 250:
+            purchase_plan.append({"sku": "MEDIUM_GREEN_BARREL", "quantity": 1})
+            gold -= 250
+        elif gold >= 100:
+            purchase_plan.append({"sku": "SMALL_GREEN_BARREL", "quantity": 1})
+            gold -= 100
+        elif gold >= 60:
+            purchase_plan.append({"sku": "MINI_GREEN_BARREL", "quantity": 1})
+            gold -= 60
 
-        if inventory:
-            num_green_potions = inventory['num_green_potions']
-            num_green_ml = inventory['num_green_ml']
-            num_red_potions = inventory['num_red_potions']
-            num_red_ml = inventory['num_red_ml']
-            num_blue_potions = inventory['num_blue_potions']
-            num_blue_ml = inventory['num_blue_ml']
-            gold = inventory['gold']
+    # i like blue more than red
+    if num_blue_potions < 10 and gold > 0:
+        if gold >= 600:
+            purchase_plan.append({"sku": "LARGE_BLUE_BARREL", "quantity": 1})
+            gold -= 600
+        elif gold >= 300:
+            purchase_plan.append({"sku": "MEDIUM_BLUE_BARREL", "quantity": 1})
+            gold -= 300
+        elif gold >= 120:
+            purchase_plan.append({"sku": "SMALL_BLUE_BARREL", "quantity": 1})
+            gold -= 120
+        elif gold >= 60:
+            purchase_plan.append({"sku": "MINI_BLUE_BARREL", "quantity": 1})
+            gold -= 60
 
-            if num_green_potions < 10:
-                if gold >= barrels["SMALL_GREEN_BARREL"]["price"]:
+    # last resort
+    if num_red_potions < 10 and gold > 0:
+        if gold >= 500:
+            purchase_plan.append({"sku": "LARGE_RED_BARREL", "quantity": 1})
+            gold -= 500
+        elif gold >= 250:
+            purchase_plan.append({"sku": "MEDIUM_RED_BARREL", "quantity": 1})
+            gold -= 250
+        elif gold >= 100:
+            purchase_plan.append({"sku": "SMALL_RED_BARREL", "quantity": 1})
+            gold -= 100
+        elif gold >= 60:
+            purchase_plan.append({"sku": "MINI_RED_BARREL", "quantity": 1})
+            gold -= 60
 
-                    purchase_plan.append({
-                    "sku": "SMALL_GREEN_BARREL",
-                    "quantity": 1,
-                    "ml_per_barrel": barrels["SMALL_GREEN_BARREL"]["ml_per_barrel"],
-                    "price": barrels["SMALL_GREEN_BARREL"]["price"]})
-
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + :ml_per_barrel"),
-                        {
-                        "barrel_price": barrels["SMALL_GREEN_BARREL"]["price"],
-                        "ml_per_barrel": barrels["SMALL_GREEN_BARREL"]["price"]
-                    })
-                    
-                
-                elif gold >= barrels["MINI_GREEN_BARREL"]["price"]:
-
-                    purchase_plan.append({
-                        "sku": "MINI_GREEN_BARREL",
-                        "quantity": 1,
-                        "ml_per_barrel": barrels["MINI_GREEN_BARREL"]["ml_per_barrel"],
-                        "price": barrels["MINI_GREEN_BARREL"]["price"]})
-
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :barrel_price, num_green_ml = num_green_ml + : ml_per_barrel"),
-                        {
-                        "barrel_price" : barrels["MINI_GREEN_BARREL"]["price"],
-                        "ml_per_barrel" : barrels["MINI_GREEN_BARREL"]["ml_per_barrel"]
-                        })
-                if num_red_potions < 10:
-                    if gold >= barrels["SMALL_RED_BARREL"]["price"]:
-
-                        purchase_plan.append({ "sku": "SMALL_RED_BARREL",
-                        "quantity": 1,
-                        "ml_per_barrel": barrels["SMALL_RED_BARREL"]["ml_per_barrel"],
-                        "price": barrels["SMALL_RED_BARREL"]["price"]
-                    })
-                    connection.execute(sqlalchemy.text(
-                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_red_ml = num_red_ml + :ml_per_barrel"),
-                        {"barrel_price": barrels["SMALL_RED_BARREL"]["price"], "ml_per_barrel": barrels["SMALL_RED_BARREL"]["ml_per_barrel"]}
-                    )
-                elif gold >= barrels["MINI_RED_BARREL"]["price"]:
-                    purchase_plan.append({
-                        "sku": "MINI_RED_BARREL",
-                        "quantity": 1,
-                        "ml_per_barrel": barrels["MINI_RED_BARREL"]["ml_per_barrel"],
-                        "price": barrels["MINI_RED_BARREL"]["price"]
-                    })
-                    connection.execute(sqlalchemy.text(
-                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_red_ml = num_red_ml + :ml_per_barrel"),
-                        {"barrel_price": barrels["MINI_RED_BARREL"]["price"], "ml_per_barrel": barrels["MINI_RED_BARREL"]["ml_per_barrel"]}
-                    )
-
-            if num_blue_potions < 10:
-                if gold >= barrels["SMALL_BLUE_BARREL"]["price"]:
-                    purchase_plan.append({
-                        "sku": "SMALL_BLUE_BARREL",
-                        "quantity": 1,
-                        "ml_per_barrel": barrels["SMALL_BLUE_BARREL"]["ml_per_barrel"],
-                        "price": barrels["SMALL_BLUE_BARREL"]["price"]
-                    })
-                    connection.execute(sqlalchemy.text(
-                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_blue_ml = num_blue_ml + :ml_per_barrel"),
-                        {"barrel_price": barrels["SMALL_BLUE_BARREL"]["price"], "ml_per_barrel": barrels["SMALL_BLUE_BARREL"]["ml_per_barrel"]}
-                    )
-                elif gold >= barrels["MINI_BLUE_BARREL"]["price"]:
-                    purchase_plan.append({
-                        "sku": "MINI_BLUE_BARREL",
-                        "quantity": 1,
-                        "ml_per_barrel": barrels["MINI_BLUE_BARREL"]["ml_per_barrel"],
-                        "price": barrels["MINI_BLUE_BARREL"]["price"]
-                    })
-                    connection.execute(sqlalchemy.text(
-                        "UPDATE global_inventory SET gold = gold - :barrel_price, num_blue_ml = num_blue_ml + :ml_per_barrel"),
-                        {"barrel_price": barrels["MINI_BLUE_BARREL"]["price"], "ml_per_barrel": barrels["MINI_BLUE_BARREL"]["ml_per_barrel"]}
-                    )
-
-            if num_green_ml > 0:
-                potion_mixer = num_green_ml // 100
-                mod_potion = num_green_ml % 100
-                connection.execute(sqlalchemy.text(
-                    "UPDATE global_inventory SET num_green_potions = num_green_potions + :potion_mixer, num_green_ml = :mod_potion"),
-                    {"potion_mixer": potion_mixer, "mod_potion": mod_potion}
-                )
-
-            if num_red_ml > 0:
-                potion_mixer = num_red_ml // 100
-                mod_potion = num_red_ml % 100
-                connection.execute(sqlalchemy.text(
-                    "UPDATE global_inventory SET num_red_potions = num_red_potions + :potion_mixer, num_red_ml = :mod_potion"),
-                    {"potion_mixer": potion_mixer, "mod_potion": mod_potion}
-                )
-
-            if num_blue_ml > 0:
-                potion_mixer = num_blue_ml // 100
-                mod_potion = num_blue_ml % 100
-                connection.execute(sqlalchemy.text(
-                    "UPDATE global_inventory SET num_blue_potions = num_blue_potions + :potion_mixer, num_blue_ml = :mod_potion"),
-                    {"potion_mixer": potion_mixer, "mod_potion": mod_potion}
-                )
     return purchase_plan

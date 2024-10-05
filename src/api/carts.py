@@ -113,8 +113,31 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("SELECT SUM(price*quantity) AS total_gold FROM cart_items WHERE cart_id = : cart_id AND item_sku = 'GREEN_POTION'"),{
-            "cart_id" : cart_id })
-          
-        
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+        # Select the total cost for each potion type in the cart
+        result = connection.execute(sqlalchemy.text("""
+            SELECT 
+                SUM(CASE WHEN item_sku = 'GREEN_POTION_0' THEN price * quantity ELSE 0 END) AS total_green,
+                SUM(CASE WHEN item_sku = 'RED_POTION_0' THEN price * quantity ELSE 0 END) AS total_red,
+                SUM(CASE WHEN item_sku = 'BLUE_POTION_0' THEN price * quantity ELSE 0 END) AS total_blue
+            FROM cart_items 
+            WHERE cart_id = :cart_id
+        """), {"cart_id": cart_id})
+
+        total_row = result.fetchone()
+
+        total_green = total_row['total_green']
+        total_red = total_row['total_red']
+        total_blue = total_row['total_blue']
+
+        total_gold_paid = total_green + total_red + total_blue
+
+        total_potions_bought = connection.execute(sqlalchemy.text("""
+            SELECT SUM(quantity) AS total_potions_bought
+            FROM cart_items 
+            WHERE cart_id = :cart_id
+        """), {"cart_id": cart_id}).scalar()
+
+    return {
+        "total_potions_bought": total_potions_bought,
+        "total_gold_paid": total_gold_paid
+    }
