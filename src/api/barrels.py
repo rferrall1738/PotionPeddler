@@ -58,10 +58,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         """))
     inventory = result.fetchone()
 
-    num_green_potions = inventory['num_green_potions']
-    num_red_potions = inventory['num_red_potions']
-    num_blue_potions = inventory['num_blue_potions']
-    gold = inventory['gold']
+    num_green_potions = inventory[0]
+    num_red_potions = inventory[1]
+    num_blue_potions = inventory[2]
+    gold = inventory[3]
 
     purchase_plan = []
 

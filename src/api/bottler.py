@@ -62,7 +62,7 @@ def get_bottle_plan():
             inventory = bottle_plan.fetchone()
 
             if inventory:
-                num_potion_ml = inventory[potion_data['ml_column']]
+                num_potion_ml = inventory[0]
 
                 if num_potion_ml > 0:
     #finds the remaining amount of ml
