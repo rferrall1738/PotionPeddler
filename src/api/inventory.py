@@ -34,7 +34,7 @@ def get_inventory():
         gold = inventory[7]
       
         print(result.fetchall())
-        total_potions = num_green_potions, num_red_potions, num_blue_potions
+        total_potions = num_green_potions+ num_red_potions+ num_blue_potions
         total_ml = num_green_ml + num_red_ml + num_blue_ml
 
 
