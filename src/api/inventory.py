@@ -23,7 +23,7 @@ def get_inventory():
 
     
     with db.engine.begin() as connection:
-        result = connection.execute("SELECT * from global_inventory")
+        result = connection.execute("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml from global_inventory")
         inventory = result.fetchone()
         num_green_potions = inventory[1]
         num_green_ml = inventory[2]
