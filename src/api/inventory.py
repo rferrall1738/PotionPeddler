@@ -23,7 +23,7 @@ def get_inventory():
 
     
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold from global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold FROM global_inventory"))
         inventory = result.fetchone()
         num_green_potions = inventory[1]
         num_green_ml = inventory[2]
@@ -121,7 +121,10 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
 
         current_gold = inventory['gold']
 
-        total_capacity_golds = capacity_purchase.potion_capacity + (capacity_purchase.ml_capacity // ml_capacity)
+        total_capacity_potions = capacity_purchase.potion_capacity // potion_capacity  
+        total_capacity_ml = capacity_purchase.ml_capacity // ml_capacity
+
+        total_capacity_golds = total_capacity_potions + total_capacity_ml
         total_capacity_cost = total_capacity_golds * capacity_cost
 
     
@@ -130,7 +133,8 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
 
     
         connection.execute(sqlalchemy.text(
-            "UPDATE global_inventory SET num_green_potions = num_green_potions + :potion_capacity, num_green_ml = num_green_ml + :ml_capacity, "
+            "UPDATE global_inventory SET num_green_potions = num_green_potions + :potion_capacity, "
+            "num_green_ml = num_green_ml + :ml_capacity, "
             "num_red_potions = num_red_potions + :potion_capacity, "
             "num_red_ml = num_red_ml + :ml_capacity, "
             "num_blue_potions = num_blue_potions + :potion_capacity, "
