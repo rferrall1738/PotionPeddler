@@ -39,7 +39,7 @@ def get_inventory():
 
     return {"number_of_potions": total_potions, "ml_in_barrels": total_ml, "gold": gold}
 
-# Gets called once a day
+# Gets called once a day FIX THIS SHIT 
 @router.post("/plan")
 def get_capacity_plan():
     """ 
@@ -58,34 +58,36 @@ def get_capacity_plan():
 
          if capacity:
             # Green potion inventory
-            green_potion_sum = capacity['num_green_potions']
-            green_ml_sum = capacity['num_green_ml']
+            green_potion_sum = capacity['num_green_potions']or 0
+            green_ml_sum = capacity['num_green_ml'] or 0
 
       
-            red_potion_sum = capacity['num_red_potions']
-            red_ml_sum = capacity['num_red_ml']
+            red_potion_sum = capacity['num_red_potions'] or 0
+            red_ml_sum = capacity['num_red_ml'] or 0 
 
-            blue_potion_sum = capacity['num_blue_potions']
-            blue_ml_sum = capacity['num_blue_ml']
+            blue_potion_sum = capacity['num_blue_potions'] or 0
+            blue_ml_sum = capacity['num_blue_ml'] or 0
 
-            gold = capacity['gold']
+            gold = capacity['gold'] or 0
 
-            # Calculate extra capacity 
-            extra_cost_green_potion_capacity = max(0, math.ceil((green_potion_sum - potion_capacity) / potion_capacity))
-            extra_cost_green_ml_capacity = max(0, math.ceil((green_ml_sum - ml_capacity) / ml_capacity))
 
-            extra_cost_red_potion_capacity = max(0, math.ceil((red_potion_sum - potion_capacity) / potion_capacity))
-            extra_cost_red_ml_capacity = max(0, math.ceil((red_ml_sum - ml_capacity) / ml_capacity))
+            extra_cost_green_potion_capacity = max(0, (green_potion_sum - potion_capacity + potion_capacity - 1) // potion_capacity)
+            extra_cost_green_ml_capacity = max(0, (green_ml_sum - ml_capacity + ml_capacity - 1) // ml_capacity)
 
-            extra_cost_blue_potion_capacity = max(0, math.ceil((blue_potion_sum - potion_capacity) / potion_capacity))
-            extra_cost_blue_ml_capacity = max(0, math.ceil((blue_ml_sum - ml_capacity) / ml_capacity))
+            extra_cost_red_potion_capacity = max(0, (red_potion_sum - potion_capacity + potion_capacity - 1) // potion_capacity)
+            extra_cost_red_ml_capacity = max(0, (red_ml_sum - ml_capacity + ml_capacity - 1) // ml_capacity)
 
-            # Calculate total costs
+            extra_cost_blue_potion_capacity = max(0, (blue_potion_sum - potion_capacity + potion_capacity - 1) // potion_capacity)
+            extra_cost_blue_ml_capacity = max(0, (blue_ml_sum - ml_capacity + ml_capacity - 1) // ml_capacity)
+
+            # Calculate total extra capacities
             total_extra_potion_capacity = extra_cost_green_potion_capacity + extra_cost_red_potion_capacity + extra_cost_blue_potion_capacity
             total_extra_ml_capacity = extra_cost_green_ml_capacity + extra_cost_red_ml_capacity + extra_cost_blue_ml_capacity
 
+            # Calculate total costs
             cost_potion_capacity = total_extra_potion_capacity * capacity_cost
             cost_ml_capacity = total_extra_ml_capacity * capacity_cost
+
 
     return {
         "potion_capacity": potion_capacity + total_extra_potion_capacity,
@@ -99,7 +101,7 @@ class CapacityPurchase(BaseModel):
     ml_capacity: int
    
 
-# Gets called once a day
+# Gets called once a day 
 @router.post("/deliver/{order_id}")
 def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     """ 
@@ -110,40 +112,38 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     ml_capacity = 10000
     capacity_cost = 1000
 
+    total_capacity_potions = capacity_purchase.potion_capacity // potion_capacity  
+    total_capacity_ml = capacity_purchase.ml_capacity // ml_capacity
+
+    total_capacity_golds = total_capacity_potions + total_capacity_ml
+    total_capacity_cost = total_capacity_golds * capacity_cost
+
     with db.engine.begin() as connection:
         
-        result = connection.execute(sqlalchemy.text( "SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold FROM global_inventory" ))
-        inventory = result.fetchone()
-
-        if not inventory:
-            return {"doesn't exist here"}
-
-        current_gold = inventory['gold']
-
-        total_capacity_potions = capacity_purchase.potion_capacity // potion_capacity  
-        total_capacity_ml = capacity_purchase.ml_capacity // ml_capacity
-
-        total_capacity_golds = total_capacity_potions + total_capacity_ml
-        total_capacity_cost = total_capacity_golds * capacity_cost
-
-    
-        if total_capacity_cost > current_gold:
-            return {"ERROR": "Too broke for more capacity."}
-
-    
-        connection.execute(sqlalchemy.text(
-            "UPDATE global_inventory SET num_green_potions = num_green_potions + :potion_capacity, "
-            "num_green_ml = num_green_ml + :ml_capacity, "
-            "num_red_potions = num_red_potions + :potion_capacity, "
-            "num_red_ml = num_red_ml + :ml_capacity, "
-            "num_blue_potions = num_blue_potions + :potion_capacity, "
-            "num_blue_ml = num_blue_ml + :ml_capacity, "
-            "gold = gold - :total_capacity_cost"
+        result = connection.execute(sqlalchemy.text(
+            """
+            UPDATE global_inventory
+            SET num_green_potions = num_green_potions + :potion_capacity,
+                num_green_ml = num_green_ml + :ml_capacity,
+                num_red_potions = num_red_potions + :potion_capacity,
+                num_red_ml = num_red_ml + :ml_capacity,
+                num_blue_potions = num_blue_potions + :potion_capacity,
+                num_blue_ml = num_blue_ml + :ml_capacity,
+                gold = gold - :total_capacity_cost
+            WHERE gold >= :total_capacity_cost
+            RETURNING num_green_potions, num_green_ml, num_red_potions, num_red_ml, 
+                      num_blue_potions, num_blue_ml, gold
+            """
         ), {
             "potion_capacity": capacity_purchase.potion_capacity,
             "ml_capacity": capacity_purchase.ml_capacity,
             "total_capacity_cost": total_capacity_cost
         })
+
+        inventory = result.fetchone()
+
+        if not inventory:
+            return {"ERROR": "Get your gold up."}
 
     return {
         "message": "Capacity updated successfully.",
