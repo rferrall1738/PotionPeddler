@@ -15,6 +15,7 @@ def get_catalog():
         num_green_potions= items[0]
         num_red_potions = items[1]
         num_blue_potions = items[2]
+       # get rid of the fstring
 
         print(f"number of potions: Green:{num_green_potions}, Red:{num_red_potions}, Blue:{num_blue_potions}")
 

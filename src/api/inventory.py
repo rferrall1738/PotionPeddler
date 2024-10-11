@@ -101,7 +101,7 @@ class CapacityPurchase(BaseModel):
     ml_capacity: int
    
 
-# Gets called once a day 
+# Gets called once a day  fix this shit
 @router.post("/deliver/{order_id}")
 def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     """ 
