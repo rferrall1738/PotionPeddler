@@ -124,9 +124,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         total_red = total_row['total_red']
         total_blue = total_row['total_blue']
 
-        gold_green = total_green['gold']
-        gold_red = total_red['gold']
-        gold_blue = total_blue['gold']
+        potion_price = 50
+
+        gold_green = total_green * potion_price
+        gold_red = total_red * potion_price
+        gold_blue = total_blue * potion_price
+        total_gold_paid = gold_green + gold_blue + gold_red
+       
 
         total_gold_paid = gold_green + gold_blue + gold_red
         total_potions = total_green + total_red + total_blue
