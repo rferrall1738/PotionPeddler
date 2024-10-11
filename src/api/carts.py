@@ -101,9 +101,17 @@ class CartItem(BaseModel):
 
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
-    """ """
+    
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""
+        UPDATE cart_items
+        SET quantity = :quantity
+        WHERE cart_id = :cart_id AND item_sku = :item_sku
+                                                """)),{
+        "quantity": cart_item.quantity, "cart_id" : cart_id, "item_sku" : item_sku
+                                                }
 
-    return "OK"
+    return {"success": True}
 
 
 class CartCheckout(BaseModel):
@@ -115,14 +123,15 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     with db.engine.begin() as connection:
         # Select the total cost for each potion type in the cart
         result = connection.execute(sqlalchemy.text("""
-            SELECT num_green_potions, num_blue_potions,num_red_potions, gold FROM global_inventory
+            SELECT num_green_potions, num_blue_potions,num_red_potions, gold 
+            FROM global_inventory
         """))
 
         total_row = result.fetchone()
 
-        total_green = total_row['total_green']
-        total_red = total_row['total_red']
-        total_blue = total_row['total_blue']
+        total_green = total_row['total_green_potions']
+        total_red = total_row['total_red_potions']
+        total_blue = total_row['total_blue_potions']
 
         potion_price = 50
 
