@@ -92,6 +92,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
+    global cart_dict
     return {"cart_id": 1}
 
 
@@ -120,31 +121,51 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
+
+
     with db.engine.begin() as connection:
         # Select the total cost for each potion type in the cart
         result = connection.execute(sqlalchemy.text("""
-            SELECT num_green_potions, num_blue_potions,num_red_potions, gold 
+            SELECT num_green_potions, num_blue_potions,num_red_potions
             FROM global_inventory
         """))
+        potions = result.fetchone()
 
-        total_row = result.fetchone()
+        num_red_potion = potions[0]
+        num_green_potion = potions[1]
+        num_blue_potion = potions[2]
 
-        total_green = total_row['total_green_potions']
-        total_red = total_row['total_red_potions']
-        total_blue = total_row['total_blue_potions']
+        
 
-        potion_price = 50
+    
+        inventory ={
+            "green_potion": result['num_green_potions'],
+             "red_potion": result['num_red_potions'],
+              "blue_potion": result['num_blue_potions'],
+        }
 
-        gold_green = total_green * potion_price
-        gold_red = total_red * potion_price
-        gold_blue = total_blue * potion_price
+       
+        potion_price = {
+            "green_potion": 10,
+            "red_potion": 20,
+            "blue_potion":30
+        }
+
+        total_potions_purchased = 0
+        total_gold_paid = 0
+
+        gold_green = num_green_potion * potion_price
+        gold_red = num_red_potion * potion_price
+        gold_blue = num_blue_potion * potion_price
         total_gold_paid = gold_green + gold_blue + gold_red
+
+     
        
 
         total_gold_paid = gold_green + gold_blue + gold_red
-        total_potions = total_green + total_red + total_blue
+        total_potions_purchased = num_green_potion + num_red_potion + num_blue_potion
 
     return {
-        "total_potions_bought": total_potions,
+        "total_potions_bought": total_potions_purchased,
         "total_gold_paid": total_gold_paid
     }
