@@ -46,57 +46,12 @@ def get_capacity_plan():
     Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
     capacity unit costs 1000 gold.
     """
-    potion_capacity = 50
-    ml_capacity = 10000
-    capacity_cost = 1000
-
-   
-    
-    with db.engine.begin() as connection:
-         result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold FROM global_inventory" ))
-         capacity = result.fetchone()
-
-         if capacity:
-            # Green potion inventory
-            green_potion_sum = capacity['num_green_potions']or 0 ## render doesn't like this
-            green_ml_sum = capacity['num_green_ml'] or 0
-
-      
-            red_potion_sum = capacity['num_red_potions'] or 0
-            red_ml_sum = capacity['num_red_ml'] or 0 
-
-            blue_potion_sum = capacity['num_blue_potions'] or 0
-            blue_ml_sum = capacity['num_blue_ml'] or 0
-
-            gold = capacity['gold'] or 0
-
-
-            extra_cost_green_potion_capacity = max(0, (green_potion_sum - potion_capacity + potion_capacity - 1) // potion_capacity)
-            extra_cost_green_ml_capacity = max(0, (green_ml_sum - ml_capacity + ml_capacity - 1) // ml_capacity)
-
-            extra_cost_red_potion_capacity = max(0, (red_potion_sum - potion_capacity + potion_capacity - 1) // potion_capacity)
-            extra_cost_red_ml_capacity = max(0, (red_ml_sum - ml_capacity + ml_capacity - 1) // ml_capacity)
-
-            extra_cost_blue_potion_capacity = max(0, (blue_potion_sum - potion_capacity + potion_capacity - 1) // potion_capacity)
-            extra_cost_blue_ml_capacity = max(0, (blue_ml_sum - ml_capacity + ml_capacity - 1) // ml_capacity)
-
-            # Calculate total extra capacities
-            total_extra_potion_capacity = extra_cost_green_potion_capacity + extra_cost_red_potion_capacity + extra_cost_blue_potion_capacity
-            total_extra_ml_capacity = extra_cost_green_ml_capacity + extra_cost_red_ml_capacity + extra_cost_blue_ml_capacity
-
-            # Calculate total costs
-            cost_potion_capacity = total_extra_potion_capacity * capacity_cost
-            cost_ml_capacity = total_extra_ml_capacity * capacity_cost
-
 
     return {
-        "potion_capacity": potion_capacity + total_extra_potion_capacity,
-        "ml_capacity": ml_capacity + total_extra_ml_capacity,
-        "cost_potion_capacity": cost_potion_capacity,
-        "cost_ml_capacity": cost_ml_capacity
-    }
-
-##############F\
+        "potion_capacity": 50,
+        "ml_capacity": 10000
+        }
+##############FIX THE PLAN MFFFFF
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
