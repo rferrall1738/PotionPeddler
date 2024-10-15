@@ -59,6 +59,14 @@ def get_catalog():
                 "potion_type": [50,0,50,0]
 
             })
+        if (num_yellow_potions > 0):
+            catalog.append({
+                 "sku": "YELLOW_POTION_0",
+                "name": "yellow potion",
+                "quantity": num_yellow_potions,
+                "potion_type": [0,50,50,0]
+
+            })
 
             print(catalog)
 
