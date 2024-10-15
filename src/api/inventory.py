@@ -96,7 +96,7 @@ def get_capacity_plan():
         "cost_ml_capacity": cost_ml_capacity
     }
 
-##############FIX THE PLAN MFFFFF
+##############F\
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
