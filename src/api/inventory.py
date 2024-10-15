@@ -58,7 +58,7 @@ def get_capacity_plan():
 
          if capacity:
             # Green potion inventory
-            green_potion_sum = capacity['num_green_potions']or 0
+            green_potion_sum = capacity['num_green_potions']or 0 ## render doesn't like this
             green_ml_sum = capacity['num_green_ml'] or 0
 
       
@@ -95,6 +95,8 @@ def get_capacity_plan():
         "cost_potion_capacity": cost_potion_capacity,
         "cost_ml_capacity": cost_ml_capacity
     }
+
+##############FIX THE PLAN MFFFFF
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
@@ -145,10 +147,22 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
         if not inventory:
             return {"ERROR": "Get your gold up."}
 
+    
+        num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold = inventory
+
     return {
         "message": "Capacity updated successfully.",
         "order_id": order_id,
         "potion_capacity_added": capacity_purchase.potion_capacity,
         "ml_capacity_added": capacity_purchase.ml_capacity,
-        "gold_spent": total_capacity_cost
+        "gold_spent": total_capacity_cost,
+        "inventory": {
+            "num_green_potions": num_green_potions,
+            "num_green_ml": num_green_ml,
+            "num_red_potions": num_red_potions,
+            "num_red_ml": num_red_ml,
+            "num_blue_potions": num_blue_potions,
+            "num_blue_ml": num_blue_ml,
+            "gold": gold
+        }
     }
