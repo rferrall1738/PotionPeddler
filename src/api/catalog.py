@@ -9,17 +9,19 @@ router = APIRouter()
 def get_catalog():
    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, num_purple_potions, num_yellow_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, num_purple_potions, num_yellow_potions, num_dark_potions FROM global_inventory"))
         items= result.fetchone()
 
         num_green_potions= items[0]
         num_red_potions = items[1]
         num_blue_potions = items[2]
-        num_purple_potions = items[3]
-        num_yellow_potions = items[4]
+        num_dark_potions = items[3]
+        num_purple_potions = items[4]
+        num_yellow_potions = items[5]
+       
        # get rid of the fstring
 
-        print(f"number of potions: Green:{num_green_potions}, Red:{num_red_potions}, Blue:{num_blue_potions}, Purple {num_purple_potions}, Yellow {num_yellow_potions}")
+        print(f"number of potions: Green:{num_green_potions}, Red:{num_red_potions}, Blue:{num_blue_potions}, Purple: {num_purple_potions}, Yellow: {num_yellow_potions}, Dark: {num_dark_potions}")
 
         catalog =[]
 
@@ -61,10 +63,18 @@ def get_catalog():
             })
         if (num_yellow_potions > 0):
             catalog.append({
-                 "sku": "YELLOW_POTION_0",
+                "sku": "YELLOW_POTION_0",
                 "name": "yellow potion",
                 "quantity": num_yellow_potions,
                 "potion_type": [0,50,50,0]
+
+            })
+        if (num_dark_potions > 0):
+            catalog.append({
+                "sku": "DARK_POTION_0",
+                "name": "dark potion",
+                "quantity": num_dark_potions,
+                "potion_type": [0,0,0,100]
 
             })
 

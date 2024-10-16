@@ -126,7 +126,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     with db.engine.begin() as connection:
         # Select the total cost for each potion type in the cart
         result = connection.execute(sqlalchemy.text("""
-            SELECT num_green_potions, num_blue_potions,num_red_potions
+            SELECT num_green_potions, num_blue_potions,num_red_potions, num_dark_potions
             FROM global_inventory
         """))
         potions = result.fetchone()
@@ -134,9 +134,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         num_red_potion = potions[0]
         num_green_potion = potions[1]
         num_blue_potion = potions[2]
+        num_dark_potions = potions[3]
 
-        
-
+    
     
         inventory ={
             "green_potion": result['num_green_potions'],
@@ -148,7 +148,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         potion_price = {
             "green_potion": 10,
             "red_potion": 20,
-            "blue_potion":30
+            "blue_potion":30,
+            "dark_potion":8
         }
 
         total_potions_purchased = 0
@@ -157,13 +158,14 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         gold_green = num_green_potion * potion_price
         gold_red = num_red_potion * potion_price
         gold_blue = num_blue_potion * potion_price
+        gold_dark = num_dark_potions * potion_price
         total_gold_paid = gold_green + gold_blue + gold_red
 
      
        
 
-        total_gold_paid = gold_green + gold_blue + gold_red
-        total_potions_purchased = num_green_potion + num_red_potion + num_blue_potion
+        total_gold_paid = gold_green + gold_blue + gold_red + gold_dark
+        total_potions_purchased = num_green_potion + num_red_potion + num_blue_potion + num_dark_potions
 
     return {
         "total_potions_bought": total_potions_purchased,

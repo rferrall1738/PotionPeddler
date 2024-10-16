@@ -23,7 +23,7 @@ def get_inventory():
 
     
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, num_dark_potions, num_dark_ml gold FROM global_inventory"))
         inventory = result.fetchone()
         num_green_potions = inventory[0]
         num_green_ml = inventory[1]
@@ -31,15 +31,17 @@ def get_inventory():
         num_red_ml = inventory[3]
         num_blue_potions = inventory[4]
         num_blue_ml = inventory[5]
-        gold = inventory[6]
+        num_dark_potions = inventory[6]
+        num_dark_ml = inventory[7]
+        gold = inventory[8]
       
-        total_potions = num_green_potions+ num_red_potions+ num_blue_potions
-        total_ml = num_green_ml + num_red_ml + num_blue_ml
+        total_potions = num_green_potions+ num_red_potions+ num_blue_potions + num_dark_potions
+        total_ml = num_green_ml + num_red_ml + num_blue_ml + num_dark_ml
 
 
     return {"number_of_potions": total_potions, "ml_in_barrels": total_ml, "gold": gold}
 
-# Gets called once a day FIX THIS SHIT 
+# Gets called once a day 
 @router.post("/plan")
 def get_capacity_plan():
     """ 
@@ -51,7 +53,7 @@ def get_capacity_plan():
         "potion_capacity": 50,
         "ml_capacity": 10000
         }
-##############FIX THE PLAN MFFFFF
+
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
@@ -86,10 +88,12 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
                 num_red_ml = num_red_ml + :ml_capacity,
                 num_blue_potions = num_blue_potions + :potion_capacity,
                 num_blue_ml = num_blue_ml + :ml_capacity,
+                num_dark_potions = num_dark_potions + :potion_capacity,
+                num_dark_ml = num_dark_ml + :ml_capacity
                 gold = gold - :total_capacity_cost
             WHERE gold >= :total_capacity_cost
             RETURNING num_green_potions, num_green_ml, num_red_potions, num_red_ml, 
-                      num_blue_potions, num_blue_ml, gold
+                      num_blue_potions, num_blue_ml, num_dark_potions,num_dark_ml gold
             """
         ), {
             "potion_capacity": capacity_purchase.potion_capacity,
@@ -103,7 +107,7 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
             return {"ERROR": "Get your gold up."}
 
     
-        num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, gold = inventory
+        num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, num_dark_potions, num_dark_ml, gold = inventory
 
     return {
         "message": "Capacity updated successfully.",
@@ -118,6 +122,8 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
             "num_red_ml": num_red_ml,
             "num_blue_potions": num_blue_potions,
             "num_blue_ml": num_blue_ml,
+            "num_dark_potions": num_dark_potions,
+            "num_dark_ml": num_dark_ml,
             "gold": gold
         }
     }

@@ -35,6 +35,12 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
              blue = connection.execute(sqlalchemy.txt("UPDATE global_inventory SET num_blue_potions = num_blue_potions + :quantity WHERE potion_type = [0,0,1,0]"),{
                     "quantity": potion.quantity
              })
+            elif (potion.potion_type == [0,0,0,1]):
+               dark = connection.execute(sqlalchemy.txt("UPDATE global_inventory SET num_dark_potions = num_dark_potions + :quantity WHERE potion_type = [0,0,0,1]"),{
+                  "quantity": potion.quantity
+               })
+            
+            potions_delivered = red + green + blue + dark
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
@@ -51,7 +57,8 @@ def get_bottle_plan():
     potion_types = {
         "green": {"ml_column": "num_green_ml", "potion_column": "num_green_potions", "potion_type": [0, 1, 0, 0]},
         "red": {"ml_column": "num_red_ml", "potion_column": "num_red_potions", "potion_type": [1, 0, 0, 0]},
-        "blue": {"ml_column": "num_blue_ml", "potion_column": "num_blue_potions", "potion_type": [0, 0, 1, 0]}
+        "blue": {"ml_column": "num_blue_ml", "potion_column": "num_blue_potions", "potion_type": [0, 0, 1, 0]},
+        "dark": {"ml_column": "num_dark_ml", "potion_column": "num_dark_potions", "potion_type": [0, 0, 0, 1]}
     }
 
     results = []

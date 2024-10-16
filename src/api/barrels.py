@@ -28,21 +28,28 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
   
         if barrel.potion_type == [0,1,0,0]:
             with db.engine.begin() as connection:
-             result = connection.execute(sqlalchemy.text(" UPDATE global_inventory SET num_green_ml = num_green_ml + total_ml"),{
+             red = connection.execute(sqlalchemy.text(" UPDATE global_inventory SET num_green_ml = num_green_ml + total_ml"),{
              "total_ml" : total_ml
             }
             )
         elif barrel.potion_type ==[1,0,0,0]:
             with db.engine.begin() as connection:
-                result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + total_ml"),{
+                green = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + total_ml"),{
                 "total_ml" : total_ml
                 })
         elif barrel.potion_type == [0,0,1,0]:
             with db.engine.begin() as connection:
-                result = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + total_ml"),{
+                blue = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + total_ml"),{
                     "total_ml": total_ml
                 }
                 )
+        elif barrel.potion_type == [0,0,0,1]:
+            with db.engine.begin() as connection:
+                dark = connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_dark_ml = num_dark_ml + total_ml"),{
+                    "total_ml": total_ml
+                }   
+                )
+                
     
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
@@ -109,5 +116,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         elif gold >= 60:
             purchase_plan.append({"sku": "MINI_RED_BARREL", "quantity": 1})
             gold -= 60
+
+   
+
 
     return purchase_plan
