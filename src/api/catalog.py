@@ -4,80 +4,56 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-
-@router.get("/catalog/", tags=["catalog"])
+###broken
+@router.get("/catalog/", tags=["catalog"]) ## broken
 def get_catalog():
    
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, num_purple_potions, num_yellow_potions, num_dark_potions FROM global_inventory"))
-        items= result.fetchone()
+   with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(
+        "SELECT num_green_potions, num_red_potions, num_blue_potions FROM global_inventory"
+    ))
+    
+    
+        items = result.fetchone()
 
-        num_green_potions= items[0]
-        num_red_potions = items[1]
-        num_blue_potions = items[2]
-        num_dark_potions = items[3]
-        num_purple_potions = items[4]
-        num_yellow_potions = items[5]
-       
-       # get rid of the fstring
+ 
+        num_green_potions, num_red_potions, num_blue_potions = items
 
-        print(f"number of potions: Green:{num_green_potions}, Red:{num_red_potions}, Blue:{num_blue_potions}, Purple: {num_purple_potions}, Yellow: {num_yellow_potions}, Dark: {num_dark_potions}")
+   
+        print(f"number of potions: Green:{num_green_potions}, Red:{num_red_potions}, Blue:{num_blue_potions}")
 
-        catalog =[]
+        catalog = []
 
-        if (num_green_potions > 0):
+        if num_green_potions > 0:
             catalog.append({
-                "sku": "GREEN_POTION_0",
-                "name": "green potion",
-                "quantity": num_green_potions,
-                "price": 20,
-                "potion_type": [0,100,0,0],
-
-            })
-        if (num_red_potions > 0):
+            "sku": "GREEN_POTION_0",
+            "name": "green potion",
+            "quantity": num_green_potions,
+            "price": 20,
+            "potion_type": [0, 100, 0, 0],  
+        })
+    
+   
+        if num_red_potions > 0:
             catalog.append({
-                "sku": "RED_POTION_0",
-                "name": "red potion",
-                "quantity": num_red_potions,
-                "price": 20,
-                "potion_type": [100,0,0,0],
-
-            })   
-        if (num_blue_potions > 0):
+            "sku": "RED_POTION_0",
+            "name": "red potion",
+            "quantity": num_red_potions,
+            "price": 20,
+            "potion_type": [100, 0, 0, 0],  
+        })
+    
+        if num_blue_potions > 0:
             catalog.append({
-                "sku": "BLUE_POTION_0",
-                "name": "blue potion",
-                "quantity": num_blue_potions,
-                "price": 20,
-                "potion_type": [0,0,100,0],
+            "sku": "BLUE_POTION_0",
+            "name": "blue potion",
+            "quantity": num_blue_potions,
+            "price": 20,
+            "potion_type": [0, 0, 100, 0],  
+        })
+    
 
-            })                  
+        print(catalog)
 
-        if (num_purple_potions > 0):
-            catalog.append({
-                "sku": "PURPLE_POTION_0",
-                "name": "purple potion",
-                "quantity": num_purple_potions,
-                "potion_type": [50,0,50,0]
-
-            })
-        if (num_yellow_potions > 0):
-            catalog.append({
-                "sku": "YELLOW_POTION_0",
-                "name": "yellow potion",
-                "quantity": num_yellow_potions,
-                "potion_type": [0,50,50,0]
-
-            })
-        if (num_dark_potions > 0):
-            catalog.append({
-                "sku": "DARK_POTION_0",
-                "name": "dark potion",
-                "quantity": num_dark_potions,
-                "potion_type": [0,0,0,100]
-
-            })
-
-            print(catalog)
-
+ 
         return catalog
