@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "supabase": "^1.68.6"
+  },
+  "dependencies": {
+    "unittest": "^1.0.0"
   }
 }
