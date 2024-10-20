@@ -22,16 +22,21 @@ class Purchase_Capacity(BaseModel):
 def get_inventory():
 
     
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, num_red_potions, num_red_ml, num_blue_potions, num_blue_ml, num_dark_potions, num_dark_ml, gold FROM global_inventory")).one()
+   with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""
+            SELECT SUM(quantity) AS total_potions, 
+                   SUM(red_ml + green_ml + blue_ml + dark_ml) AS total_ml,
+                   SUM(gold) AS total_gold
+            FROM potions
+        """))
+        inventory = result.fetchone()
+    
+        return {
+        "total_potions": inventory.total_potions,
+        "total_ml": inventory.total_ml,
+        "gold": inventory.total_gold
+    }
 
-      
-        total_potions = [result.num_green_potions+ result.num_red_potions+ result.num_blue_potions + result.num_dark_potions]
-        total_ml = [result.num_green_ml + result.num_red_ml + result.num_blue_ml + result.num_dark_ml]
-        gold = result.gold
-
-
-    return {"number_of_potions": total_potions, "ml_in_barrels": total_ml, "gold": gold}
 
 # Gets called once a day 
 @router.post("/plan")

@@ -4,56 +4,29 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-###broken
-@router.get("/catalog/", tags=["catalog"]) ## broken
+
+@router.get("/catalog/", tags=["catalog"]) 
 def get_catalog():
    
    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(
-        "SELECT num_green_potions, num_red_potions, num_blue_potions FROM global_inventory"
-    ))
-    
-    
-        items = result.fetchone()
-
- 
-        num_green_potions, num_red_potions, num_blue_potions = items
-
-   
-        print(f"number of potions: Green:{num_green_potions}, Red:{num_red_potions}, Blue:{num_blue_potions}")
+        result = connection.execute(sqlalchemy.text("""
+            SELECT sku, red_ml, green_ml, blue_ml, dark_ml, quantity, price
+            FROM potions
+        """))
+        potions = result.fetchall()
 
         catalog = []
+        
+        for potion in potions:
+           
+            potion_type = [potion.red_ml, potion.green_ml, potion.blue_ml, potion.dark_ml]
 
-        if num_green_potions > 0:
             catalog.append({
-            "sku": "GREEN_POTION_0",
-            "name": "green potion",
-            "quantity": num_green_potions,
-            "price": 20,
-            "potion_type": [0, 100, 0, 0],  
-        })
-    
-   
-        if num_red_potions > 0:
-            catalog.append({
-            "sku": "RED_POTION_0",
-            "name": "red potion",
-            "quantity": num_red_potions,
-            "price": 20,
-            "potion_type": [100, 0, 0, 0],  
-        })
-    
-        if num_blue_potions > 0:
-            catalog.append({
-            "sku": "BLUE_POTION_0",
-            "name": "blue potion",
-            "quantity": num_blue_potions,
-            "price": 20,
-            "potion_type": [0, 0, 100, 0],  
-        })
-    
+                "sku": potion.sku,
+                "name": potion.sku,
+                "quantity": potion.quantity,
+                "price": potion.price,
+                "potion_type": potion_type,  
+            })
 
-        print(catalog)
-
- 
         return catalog

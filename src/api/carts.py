@@ -92,9 +92,16 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    global cart_dict
-    return {"cart_id": 1}
-
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""
+            INSERT INTO carts (customer_name)
+            VALUES (:customer_name)
+            RETURNING cart_id
+        """), {"customer_name": new_cart.customer_name})
+        
+        cart_id = result.fetchone()["cart_id"]
+    
+    return {"cart_id": cart_id}
 
 class CartItem(BaseModel):
     quantity: int
@@ -117,56 +124,29 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
 class CartCheckout(BaseModel):
     payment: str
-# fix it 
+
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
-
     with db.engine.begin() as connection:
-        # Select the total cost for each potion type in the cart
         result = connection.execute(sqlalchemy.text("""
-            SELECT num_green_potions, num_blue_potions,num_red_potions, num_dark_potions
-            FROM global_inventory
+            SELECT sku, red_ml, green_ml, blue_ml, dark_ml, price, quantity
+            FROM potions
         """))
-        potions = result.fetchone()
-
-        num_red_potion = potions[0]
-        num_green_potion = potions[1]
-        num_blue_potion = potions[2]
-        num_dark_potions = potions[3]
-
-    
-    
-        inventory ={
-            "green_potion": result['num_green_potions'],
-             "red_potion": result['num_red_potions'],
-              "blue_potion": result['num_blue_potions'],
-        }
-
-       
-        potion_price = {
-            "green_potion": 10,
-            "red_potion": 20,
-            "blue_potion":30,
-            "dark_potion":8
-        }
-
-        total_potions_purchased = 0
+        potions = result.fetchall()
+        
         total_gold_paid = 0
-
-        gold_green = num_green_potion * potion_price
-        gold_red = num_red_potion * potion_price
-        gold_blue = num_blue_potion * potion_price
-        gold_dark = num_dark_potions * potion_price
-        total_gold_paid = gold_green + gold_blue + gold_red
-
-     
-       
-
-        total_gold_paid = gold_green + gold_blue + gold_red + gold_dark
-        total_potions_purchased = num_green_potion + num_red_potion + num_blue_potion + num_dark_potions
-
+        total_potions_purchased = 0
+        
+    
+        for potion in potions:
+            potion_sku = potion.sku
+            potion_price = potion.price
+            potion_quantity = potion.quantity
+            total_gold_paid += potion_quantity * potion_price
+            total_potions_purchased += potion_quantity
+    
     return {
         "total_potions_bought": total_potions_purchased,
         "total_gold_paid": total_gold_paid
