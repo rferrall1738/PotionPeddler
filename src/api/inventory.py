@@ -27,7 +27,7 @@ def get_inventory():
             SELECT SUM(quantity) AS total_potions, 
                    SUM(red_ml + green_ml + blue_ml + dark_ml) AS total_ml,
                    SUM(gold) AS total_gold
-            FROM potions
+            FROM potion_catalog
         """))
         inventory = result.fetchone()
     

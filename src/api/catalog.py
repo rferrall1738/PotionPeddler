@@ -11,7 +11,7 @@ def get_catalog():
    with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
             SELECT sku, red_ml, green_ml, blue_ml, dark_ml, quantity, price
-            FROM potions
+            FROM potion_catalog
         """))
         potions = result.fetchall()
 
