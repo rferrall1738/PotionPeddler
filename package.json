@@ -3,6 +3,7 @@
     "supabase": "^1.68.6"
   },
   "dependencies": {
+    "python": "^0.0.4",
     "unittest": "^1.0.0"
   }
 }

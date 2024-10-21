@@ -18,14 +18,14 @@ class Purchase_Capacity(BaseModel):
 
 
 
-@router.get("/audit") 
+@router.get("/audit") ## doesn't work
 def get_inventory():
 
     
    with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
             SELECT SUM(quantity) AS total_potions, 
-                   SUM(red_ml + green_ml + blue_ml + dark_ml) AS total_ml,
+                   SUM(num_red_ml + num_green_ml + num_blue_ml + num_dark_ml) AS total_ml,
                    SUM(gold) AS total_gold
             FROM potion_catalog
         """))
