@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "supabase": "^1.68.6"
+    "supabase": "^1.204.3"
   },
   "dependencies": {
     "python": "^0.0.4",

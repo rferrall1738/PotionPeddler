@@ -57,18 +57,24 @@ def search_orders(
     items_per_page = 5
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT customer_name, item_sku,(price * quantity) AS line_item_total,timestamp FROM cart_items"))
+        cart = connection.execute(sqlalchemy.text("""
+        SELECT 
+        cart_id,
+        customer_name,
+        item_sku,(price * quantity) AS line_item_total,
+        timestamp 
+        FROM cart_items"""))
 
     return {
         "previous": "",
         "next": "",
         "results": [
             {
-                "line_item_id": 1,
-                "item_sku": "1 oblivion potion",
-                "customer_name": "Scaramouche",
-                "line_item_total": 50,
-                "timestamp": "2021-01-01T00:00:00Z",
+                "line_item_id": cart.cart_id,
+                "item_sku": cart.item_sku,
+                "customer_name": cart.customer_name,
+                "line_item_total": cart.line_item_total,
+                "timestamp": cart.timestamp,
             }
         ],
     }
@@ -93,13 +99,15 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""
+        cart_creation = connection.execute(sqlalchemy.text("""
             INSERT INTO carts (customer_name)
             VALUES (:customer_name)
             RETURNING cart_id
         """), {"customer_name": new_cart.customer_name})
         
-        cart_id = result.fetchone()["cart_id"]
+        cart_id = cart_creation.fetchone()["cart_id"]
+
+        print(cart_creation.customer_name, cart_creation.cart_id)
     
     return {"cart_id": cart_id}
 
@@ -111,13 +119,14 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""
+        item_quantity = connection.execute(sqlalchemy.text("""
         UPDATE cart_items
         SET quantity = :quantity
         WHERE cart_id = :cart_id AND item_sku = :item_sku
                                                 """)),{
         "quantity": cart_item.quantity, "cart_id" : cart_id, "item_sku" : item_sku
                                                 }
+        print(item_quantity.quantity, item_quantity.item_sku, item_quantity.cart_id)
 
     return {"success": True}
 
@@ -130,11 +139,11 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""
+        checkout = connection.execute(sqlalchemy.text("""
             SELECT sku, red_ml, green_ml, blue_ml, dark_ml, price, quantity
             FROM potion_catalog
         """))
-        potions = result.fetchall()
+        potions = checkout.fetchall()
         
         total_gold_paid = 0
         total_potions_purchased = 0

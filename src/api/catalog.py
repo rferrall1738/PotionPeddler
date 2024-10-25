@@ -9,15 +9,15 @@ router = APIRouter()
 def get_catalog():
    
    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""
+        catalog_description = connection.execute(sqlalchemy.text("""
             SELECT sku, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, quantity, price
             FROM potion_catalog
         """))
-        potions = result.fetchall()
+        potions_catalog = catalog_description.fetchall()
 
         catalog = []
         
-        for potion in potions:
+        for potion in potions_catalog:
            
             potion_type = potion.num_red_ml, potion.num_green_ml, potion.num_blue_ml, potion.num_dark_ml
 

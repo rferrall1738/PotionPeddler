@@ -62,13 +62,13 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         for potion_name, potion_data in potion_types.items():
-            result = connection.execute(sqlalchemy.text(f"""
+            potion_plan = connection.execute(sqlalchemy.text(f"""
                 SELECT {potion_data['ml_column']}, {potion_data['potion_column']} 
                 FROM global_inventory 
                 WHERE sku = :sku
             """), {"sku": potion_name.upper() + "_POTION_0"})
 
-            inventory = result.fetchone()
+            inventory = potion_plan.fetchone()
 
             if inventory:
                 num_potion_ml = inventory[0]
