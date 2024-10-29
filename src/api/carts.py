@@ -11,7 +11,6 @@ router = APIRouter(
     tags=["cart"],
     dependencies=[Depends(auth.get_api_key)],
 )
-
 class search_sort_options(str, Enum):
     customer_name = "customer_name"
     item_sku = "item_sku"
@@ -22,7 +21,7 @@ class search_sort_order(str, Enum):
     asc = "asc"
     desc = "desc"   
 
-@router.get("/search/", tags=["search"])
+@router.get("/search/", tags=["search"])   ###broken
 def search_orders(
     customer_name: str = "",
     potion_sku: str = "",
@@ -55,20 +54,22 @@ def search_orders(
     time is 5 total line items.
     """
     items_per_page = 5
-
+    page = []
     with db.engine.begin() as connection:
-        cart = connection.execute(sqlalchemy.text("""
+        carts = connection.execute(sqlalchemy.text("""
         SELECT 
-        cart_id,
-        customer_name,
-        item_sku,(price * quantity) AS line_item_total,
+        cart_id, customer_name, item_sku,
+        (price * quantity) AS line_item_total,
         timestamp 
-        FROM cart_items"""))
+        FROM cart_items""")).fetchall()
 
-    return {
-        "previous": "",
-        "next": "",
-        "results": [
+        for cart in carts :
+            page.append( {
+
+
+                "previous": "",
+                "next": "",
+                "results": [
             {
                 "line_item_id": cart.cart_id,
                 "item_sku": cart.item_sku,
@@ -77,7 +78,11 @@ def search_orders(
                 "timestamp": cart.timestamp,
             }
         ],
+            
     }
+)   
+    return page
+
 
 
 class Customer(BaseModel):
@@ -87,16 +92,27 @@ class Customer(BaseModel):
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
-    """
-    Which customers visited the shop today?
-    """
+    potential_customers=[]
+    with db.engine.begine() as connection:
+        visits= connection.execute(sqlalchemy.text("""
+    INSERT INTO carts (customer_name, cart_id)
+    VALUES(:customer_name, :cart_id)
+    RETURNING customer_name                                
+    """)).fetchall()
+        for visit in visits:
+            potential_customers.append(
+                {
+                    "Customers": visit['customer_name'],
+                    "Visit_Id" : visit['cart_id']
+                }
+            )
     print(customers)
 
-    return "OK"
+    return potential_customers
 
 
 @router.post("/")
-def create_cart(new_cart: Customer):
+def create_cart(new_cart: Customer): ## broken
     """ """
     with db.engine.begin() as connection:
         cart_creation = connection.execute(sqlalchemy.text("""
@@ -115,7 +131,7 @@ class CartItem(BaseModel):
     quantity: int
 
 
-@router.post("/{cart_id}/items/{item_sku}")
+@router.post("/{cart_id}/items/{item_sku}") ###brokenm
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     
     with db.engine.begin() as connection:
@@ -123,7 +139,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         UPDATE cart_items
         SET quantity = :quantity
         WHERE cart_id = :cart_id AND item_sku = :item_sku
-                                                """)),{
+        """)),{
         "quantity": cart_item.quantity, "cart_id" : cart_id, "item_sku" : item_sku
                                                 }
         print(item_quantity.quantity, item_quantity.item_sku, item_quantity.cart_id)
@@ -134,14 +150,17 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 class CartCheckout(BaseModel):
     payment: str
 
-@router.post("/{cart_id}/checkout")
+@router.post("/{cart_id}/checkout") ## broken
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
     with db.engine.begin() as connection:
         checkout = connection.execute(sqlalchemy.text("""
             SELECT sku, red_ml, green_ml, blue_ml, dark_ml, price, quantity
+            
             FROM potion_catalog
+            INNER JOIN cart_items
+                                                      
         """))
         potions = checkout.fetchall()
         
