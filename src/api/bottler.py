@@ -66,7 +66,7 @@ def get_bottle_plan():
                 SELECT {potion_data['ml_column']}, {potion_data['potion_column']} 
                 FROM global_inventory 
                 WHERE id :id 
-            """), {"sku": potion_name.upper() + "_POTION_0"})
+            """), {"id":5})
 
             inventory = potion_plan.fetchone()
 
@@ -81,11 +81,11 @@ def get_bottle_plan():
                         UPDATE global_inventory
                         SET {potion_data['potion_column']} = {potion_data['potion_column']} + :num_potions, 
                             {potion_data['ml_column']} = :remaining_ml
-                        WHERE sku = :sku
+                        WHERE id = :id
                     """), {
                         "num_potions": num_potions,
                         "remaining_ml": remaining_ml,
-                        "sku": potion_name.upper() + "_POTION_0"
+                        "id": 5
                     })
 
                     results.append({
