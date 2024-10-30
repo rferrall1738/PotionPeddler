@@ -10,7 +10,7 @@ def get_catalog():
    
    with db.engine.begin() as connection:
         catalog_description = connection.execute(sqlalchemy.text("""
-            SELECT sku, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, quantity, price
+            SELECT sku, amount_red, amount_green, amount_blue, amount_dark, quantity, price
             FROM potion_catalog
         """))
         potions_catalog = catalog_description.fetchall()
@@ -19,7 +19,7 @@ def get_catalog():
         
         for potion in potions_catalog:
            
-            potion_type = potion.num_red_ml, potion.num_green_ml, potion.num_blue_ml, potion.num_dark_ml
+            potion_type = potion.amount_red, potion.amount_green, potion.amount_blue, potion.amount_dark
 
             catalog.append({
                 "sku": potion.sku,
