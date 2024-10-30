@@ -60,7 +60,7 @@ def get_bottle_plan():
     
 
     with db.engine.begin() as connection:
-        for potion_data in potion_types.items():
+        for  potion_name,potion_data in potion_types.items():
             potion_plan = connection.execute(sqlalchemy.text(f"""
                 SELECT {potion_data['ml_column']}, {potion_data['potion_column']} 
                 FROM global_inventory 
