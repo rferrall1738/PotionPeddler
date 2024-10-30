@@ -157,15 +157,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                                       
         """),{"cart_id": cart_id}).fetchall()
         
-   
-    
         total_cost = sum(potion.quantity *potion.price for potion in checkout_cart)
     
         connection.execute(sqlalchemy.text("""
         UPDATE global_inventory
         SET gold = gold + :total_cost
-        """)), {"total_cost": total_cost}
-    
+        """), {"total_cost": total_cost}
+        )
     return {
         "total_potions_bought": len(checkout_cart),
         "total_gold_paid": total_cost
