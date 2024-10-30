@@ -150,26 +150,12 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
     with db.engine.begin() as connection:
         checkout_cart = connection.execute(sqlalchemy.text("""
-            SELECT item_sku.cart_items,quantity.cart_items, price.cart_items, 
+            SELECT cart_items.item_sku,cart_items.quantity, potion_catalog.price, 
             FROM cart_items
             JOIN potion_catalog ON cart_items.item_sku = potion_catalog.sku
             WHERE cart_id = :cart_id
                                                       
-        """),{"cart_id": cart_id}class CartCheckout(BaseModel):
-    payment: str
-
-@router.post("/{cart_id}/checkout") ## broken
-def checkout(cart_id: int, cart_checkout: CartCheckout):
-    """ """
-
-    with db.engine.begin() as connection:
-        checkout_cart = connection.execute(sqlalchemy.text("""
-            SELECT item_sku.cart_items,quantity.cart_items, price.cart_items, 
-            FROM cart_items
-            JOIN potion_catalog ON cart_items.item_sku = potion_catalog.sku
-            WHERE cart_id = :cart_id
-                                                      
-        """)),{"cart_id": cart_id}.fetchall()
+        """),{"cart_id": cart_id}).fetchall()
         
    
     
@@ -180,20 +166,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         SET gold = gold + :total_cost
         """)), {"total_cost": total_cost}
     
-    return {
-        "total_potions_bought": len(checkout_cart),
-        "total_gold_paid": total_cost
-    }).fetchall()
-        
-   
-    
-        total_cost = sum(potion.quantity *potion.price for potion in checkout_cart)
-    
-        connection.execute(sqlalchemy.text("""
-        UPDATE global_inventory
-        SET gold = gold + :total_cost
-        """), {"total_cost": total_cost}
-        )
     return {
         "total_potions_bought": len(checkout_cart),
         "total_gold_paid": total_cost
