@@ -112,9 +112,11 @@ def create_cart(new_cart: Customer): ## broken
                "level": new_cart.level
                })
         
-        cart_id = cart_creation.fetchone()[0]
+        result = cart_creation.fetchone()
+        cart_id = result["cart_id"]
+        customer_name = result["customer_name"]
 
-        print(cart_creation.customer_name, cart_id)
+        print(customer_name, cart_id)
     
     return {"cart_id": cart_id}
 
@@ -134,8 +136,8 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
          "quantity": cart_item.quantity, 
          "cart_id" : cart_id, 
          "item_sku" : item_sku
-         }
-)
+         }).fetchone
+        
         print(item_quantity.quantity, item_sku,cart_id)
 
     return {"success": True}
@@ -144,7 +146,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 class CartCheckout(BaseModel):
     payment: str
 
-@router.post("/{cart_id}/checkout") ## broken
+@router.post("/{cart_id}/checkout") 
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
