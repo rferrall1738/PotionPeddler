@@ -114,9 +114,9 @@ def create_cart(new_cart: Customer): ## broken
         
         result = cart_creation.fetchone()
         cart_id = result["cart_id"]
-        customer_name = result["customer_name"]
+        
 
-        print(customer_name, cart_id)
+        print(cart_id)
     
     return {"cart_id": cart_id}
 
@@ -136,9 +136,10 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
          "quantity": cart_item.quantity, 
          "cart_id" : cart_id, 
          "item_sku" : item_sku
-         }).fetchone
+         }).fetchone()
+        quantity = item_quantity["quantity"]
         
-        print(item_quantity.quantity, item_sku,cart_id)
+        print(quantity, item_sku,cart_id)
 
     return {"success": True}
 
