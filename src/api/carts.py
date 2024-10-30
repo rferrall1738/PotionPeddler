@@ -112,7 +112,7 @@ def create_cart(new_cart: Customer): ## broken
                "level": new_cart.level
                })
         
-        cart_id = cart_creation.fetchone()["cart_id"]
+        cart_id = cart_creation.fetchone()[0]
 
         print(cart_creation.customer_name, cart_id)
     
@@ -129,7 +129,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         item_quantity = connection.execute(sqlalchemy.text("""
         INSERT INTO cart_items (cart_id, item_sku, quantity)
         VALUES (:cart_id, :item_sku, :quantity)
-        ON CONFLICT (cart_id, item_sku) DO UPDATE SET quantity = :quantity
+        RETURNING cart_id, item_sku, quantity
         """),{
          "quantity": cart_item.quantity, 
          "cart_id" : cart_id, 
@@ -150,7 +150,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
     with db.engine.begin() as connection:
         checkout_cart = connection.execute(sqlalchemy.text("""
-            SELECT cart_items.item_sku,cart_items.quantity, potion_catalog.price, 
+            SELECT cart_items.item_sku, cart_items.quantity, potion_catalog.price
             FROM cart_items
             JOIN potion_catalog ON cart_items.item_sku = potion_catalog.sku
             WHERE cart_id = :cart_id
