@@ -65,7 +65,7 @@ def get_bottle_plan():
             potion_plan = connection.execute(sqlalchemy.text(f"""
                 SELECT {potion_data['ml_column']}, {potion_data['potion_column']} 
                 FROM global_inventory 
-                WHERE sku = :sku
+                WHERE id :id 
             """), {"sku": potion_name.upper() + "_POTION_0"})
 
             inventory = potion_plan.fetchone()
@@ -94,3 +94,6 @@ def get_bottle_plan():
                     })
 
     return results
+
+if __name__ == "__main__":
+    print(get_bottle_plan())

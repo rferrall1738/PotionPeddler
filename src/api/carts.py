@@ -61,7 +61,8 @@ def search_orders(
         cart_id, customer_name, item_sku,
         (price * quantity) AS line_item_total,
         timestamp 
-        FROM cart_items""")).fetchall()
+        FROM cart_items
+        LIMIT 5""")).fetchall()
 
         for cart in carts :
             page.append( {
@@ -92,32 +93,19 @@ class Customer(BaseModel):
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
-    potential_customers=[]
-    with db.engine.begine() as connection:
-        visits= connection.execute(sqlalchemy.text("""
-    INSERT INTO carts (customer_name, cart_id)
-    VALUES(:customer_name, :cart_id)
-    RETURNING customer_name                                
-    """)).fetchall()
-        for visit in visits:
-            potential_customers.append(
-                {
-                    "Customers": visit['customer_name'],
-                    "Visit_Id" : visit['cart_id']
-                }
-            )
+    """
+    Log customer visits.
+    """
     print(customers)
-
-    return potential_customers
-
+    return "OK"
 
 @router.post("/")
 def create_cart(new_cart: Customer): ## broken
     """ """
     with db.engine.begin() as connection:
         cart_creation = connection.execute(sqlalchemy.text("""
-            INSERT INTO carts (customer_name)
-            VALUES (:customer_name)
+            INSERT INTO carts (customer_name, character_class, level)
+            VALUES (:customer_name, :character_class, :level)
             RETURNING cart_id
         """), {"customer_name": new_cart.customer_name})
         
@@ -131,18 +119,18 @@ class CartItem(BaseModel):
     quantity: int
 
 
-@router.post("/{cart_id}/items/{item_sku}") ###brokenm
+@router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     
     with db.engine.begin() as connection:
         item_quantity = connection.execute(sqlalchemy.text("""
-        UPDATE cart_items
-        SET quantity = :quantity
-        WHERE cart_id = :cart_id AND item_sku = :item_sku
+        INSERT INTO cart_items(cart_id,item_sku,quantity)
+        VALUES (:cart_id, :item_sku, :quantity)
+        ON CONFLICT (cart_id,item_sku) DO UPDATE SET quantity = :quantity
         """)),{
         "quantity": cart_item.quantity, "cart_id" : cart_id, "item_sku" : item_sku
                                                 }
-        print(item_quantity.quantity, item_quantity.item_sku, item_quantity.cart_id)
+        print(item_quantity.quantity, item_sku,cart_id)
 
     return {"success": True}
 
@@ -155,27 +143,24 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
     with db.engine.begin() as connection:
-        checkout = connection.execute(sqlalchemy.text("""
-            SELECT sku, red_ml, green_ml, blue_ml, dark_ml, price, quantity
-            
-            FROM potion_catalog
-            INNER JOIN cart_items
+        checkout_cart = connection.execute(sqlalchemy.text("""
+            SELECT item_sku,quantity, price, 
+            FROM cart_items
+            JOIN potion_catalog ON cart_items.item_sku = potion_catalog.sku
+            WHERE cart_id = :cart_id
                                                       
-        """))
-        potions = checkout.fetchall()
+        """)),{"cart_id": cart_id}.fetchall()
         
-        total_gold_paid = 0
-        total_potions_purchased = 0
-        
+   
     
-        for potion in potions:
-            potion_sku = potion.sku
-            potion_price = potion.price
-            potion_quantity = potion.quantity
-            total_gold_paid += potion_quantity * potion_price
-            total_potions_purchased += potion_quantity
+        total_cost = sum(potion.quantity *potion.price for potion in checkout_cart)
+    
+        connection.execute(sqlalchemy.text("""
+        UPDATE global_inventory
+        SET gold = gold + :total_cost
+        """)), {"total_cost": total_cost}
     
     return {
-        "total_potions_bought": total_potions_purchased,
-        "total_gold_paid": total_gold_paid
+        "total_potions_bought": len(checkout_cart),
+        "total_gold_paid": total_cost
     }
