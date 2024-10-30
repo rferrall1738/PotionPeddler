@@ -107,11 +107,14 @@ def create_cart(new_cart: Customer): ## broken
             INSERT INTO carts (customer_name, character_class, level)
             VALUES (:customer_name, :character_class, :level)
             RETURNING cart_id
-        """), {"customer_name": new_cart.customer_name}).one()
+        """), {"customer_name": new_cart.customer_name,
+               "character_class": new_cart.character_class,
+               "level": new_cart.level
+               })
         
         cart_id = cart_creation.fetchone()["cart_id"]
 
-        print(cart_creation.customer_name, cart_creation.cart_id)
+        print(cart_creation.customer_name, cart_id)
     
     return {"cart_id": cart_id}
 
@@ -126,14 +129,33 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         item_quantity = connection.execute(sqlalchemy.text("""
         INSERT INTO cart_items (cart_id, item_sku, quantity)
         VALUES (:cart_id, :item_sku, :quantity)
-        ON CONFLICT (cart_id,item_sku) DO UPDATE SET quantity = :quantity
-        """)),{"quantity": cart_item.quantity, "cart_id" : cart_id, "item_sku" : item_sku}
+        ON CONFLICT (cart_id, item_sku) DO UPDATE SET quantity = :quantity
+        """),{
+         "quantity": cart_item.quantity, 
+         "cart_id" : cart_id, 
+         "item_sku" : item_sku
+         }
+)
         print(item_quantity.quantity, item_sku,cart_id)
 
     return {"success": True}
 
 
 class CartCheckout(BaseModel):
+    payment: str
+
+@router.post("/{cart_id}/checkout") ## broken
+def checkout(cart_id: int, cart_checkout: CartCheckout):
+    """ """
+
+    with db.engine.begin() as connection:
+        checkout_cart = connection.execute(sqlalchemy.text("""
+            SELECT item_sku.cart_items,quantity.cart_items, price.cart_items, 
+            FROM cart_items
+            JOIN potion_catalog ON cart_items.item_sku = potion_catalog.sku
+            WHERE cart_id = :cart_id
+                                                      
+        """),{"cart_id": cart_id}class CartCheckout(BaseModel):
     payment: str
 
 @router.post("/{cart_id}/checkout") ## broken
@@ -158,6 +180,20 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         SET gold = gold + :total_cost
         """)), {"total_cost": total_cost}
     
+    return {
+        "total_potions_bought": len(checkout_cart),
+        "total_gold_paid": total_cost
+    }).fetchall()
+        
+   
+    
+        total_cost = sum(potion.quantity *potion.price for potion in checkout_cart)
+    
+        connection.execute(sqlalchemy.text("""
+        UPDATE global_inventory
+        SET gold = gold + :total_cost
+        """), {"total_cost": total_cost}
+        )
     return {
         "total_potions_bought": len(checkout_cart),
         "total_gold_paid": total_cost
