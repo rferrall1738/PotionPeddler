@@ -176,7 +176,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         INSERT INTO account_transactions(gold, num_potions,description)
         VALUES (:total_cost, :potions_bought)
 
-"""))
+"""),{"total_cost":total_cost,
+      "potions_bought": potions_bought
+      })
     return {
         "total_potions_bought": potions_bought,
         "total_gold_paid": total_cost
