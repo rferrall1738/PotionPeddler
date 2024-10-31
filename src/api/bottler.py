@@ -38,7 +38,12 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                     """), {
                         "quantity": potion.quantity
                     })
-    
+
+                    connection.execute(sqlalchemy.text(
+                        """
+                        INSERT INTO account_transactions (num_potions,gold, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, description)
+                        VALUES (:num_potions, -:num_red_ml, -:num_green_ml, -:num_blue_ml,-:num_dark_ml, :description)
+                        """ ))
     print(f"Potions delivered: {potions_delivered}, order_id: {order_id}")
     return "OK"
 
