@@ -113,7 +113,7 @@ def create_cart(new_cart: Customer): ## broken
                "character_class": new_cart.character_class,
                "level": new_cart.level
                })
-        result = cart_creation.mappings.fetchone()
+        result = cart_creation.mappings().fetchone()
         
         cart_id = result['cart_id']
 
@@ -139,7 +139,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
          "item_sku" : item_sku
          })
         
-        result = item_quantity.mappings.fetchone()
+        result = item_quantity.mappings().fetchone()
         quantity = result['quantity']
         
         print(quantity, item_sku,cart_id)
