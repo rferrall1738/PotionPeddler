@@ -177,7 +177,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         VALUES (:total_cost, :potions_bought, :description)
 
 """),{"total_cost":total_cost,
-      "potions_bought": potions_bought
+      "potions_bought": potions_bought,
+      "description": f"Checkout {cart_id}"
       })
     return {
         "total_potions_bought": potions_bought,
