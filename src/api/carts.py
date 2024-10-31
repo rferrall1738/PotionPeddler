@@ -174,7 +174,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
         connection.execute(sqlalchemy.text("""
         INSERT INTO account_transactions(gold, num_potions,description)
-        VALUES (:total_cost, :potions_bought)
+        VALUES (:total_cost, :potions_bought, :description)
 
 """),{"total_cost":total_cost,
       "potions_bought": potions_bought
