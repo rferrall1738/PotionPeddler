@@ -102,6 +102,8 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer): ## broken
     """ """
+
+
     with db.engine.begin() as connection:
         cart_creation = connection.execute(sqlalchemy.text("""
             INSERT INTO carts (customer_name, character_class, level)
@@ -111,10 +113,9 @@ def create_cart(new_cart: Customer): ## broken
                "character_class": new_cart.character_class,
                "level": new_cart.level
                })
+        result = cart_creation.mappings.fetchone()
         
-        result = cart_creation.fetchone()
-        cart_id = result["cart_id"]
-        
+        cart_id = result['cart_id']
 
         print(cart_id)
     
@@ -136,8 +137,10 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
          "quantity": cart_item.quantity, 
          "cart_id" : cart_id, 
          "item_sku" : item_sku
-         }).fetchone()
-        quantity = item_quantity["quantity"]
+         })
+        
+        result = item_quantity.mappings.fetchone()
+        quantity = result['quantity']
         
         print(quantity, item_sku,cart_id)
 
