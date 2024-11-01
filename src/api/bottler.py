@@ -89,7 +89,7 @@ def get_bottle_plan():
                     """), {
                         "num_potions": num_potions,
                         "remaining_ml": remaining_ml,
-                        "id": 5
+                        "id": 6
                     })
 
                     results.append({
