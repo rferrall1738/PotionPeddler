@@ -65,6 +65,8 @@ def search_orders(
         LIMIT 5""")).fetchall()
 
         for cart in carts :
+            next_page = str(page +1) if len(carts) ==items_per_page else ""
+            previous_page = str(page -1) if page >0 else ""
             page.append( {
 
 
@@ -82,7 +84,11 @@ def search_orders(
             
     }
 )   
-    return page
+    return{
+        "previous": previous_page,
+        "next": next_page,
+        "results": page
+    }
 
 
 
@@ -100,7 +106,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
     return "OK"
 
 @router.post("/")
-def create_cart(new_cart: Customer): ## broken
+def create_cart(new_cart: Customer): 
     """ """
 
 
