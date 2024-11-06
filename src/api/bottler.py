@@ -70,7 +70,7 @@ def get_bottle_plan():
                 SELECT {potion_data['ml_column']}, {potion_data['potion_column']} 
                 FROM global_inventory 
                 WHERE id= :id 
-            """), {"id":6}).scalarone()
+            """), {"id":6}).fetchone()
 
             if potion_inventory:
                 num_potion_ml = potion_inventory[0]
