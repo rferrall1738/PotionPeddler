@@ -66,16 +66,14 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         for  potion_name,potion_data in potion_types.items():
-            potion_plan = connection.execute(sqlalchemy.text(f"""
+            potion_inventory = connection.execute(sqlalchemy.text(f"""
                 SELECT {potion_data['ml_column']}, {potion_data['potion_column']} 
                 FROM global_inventory 
                 WHERE id= :id 
-            """), {"id":5})
+            """), {"id":6}).scalarone()
 
-            inventory = potion_plan.fetchone()
-
-            if inventory:
-                num_potion_ml = inventory[0]
+            if potion_inventory:
+                num_potion_ml = potion_inventory[0]
 
                 if num_potion_ml >= potion_ml:
                     num_potions = num_potion_ml // potion_ml
@@ -92,9 +90,17 @@ def get_bottle_plan():
                         "id": 6
                     })
 
+                    connection.execute(sqlalchemy.text("""
+
+                    INSERT INTO account_transactions (num_potions, description, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml)
+                    VALUES (:num_potions, num_red_ml,num_blue_ml,num_gren_ml,num_dark_ml)
+                    """),{"quantity":num_potions,
+                          "potion_type":potion_data["potion_type"]})
+
                     results.append({
                         "potion_type": potion_data["potion_type"],
                         "quantity": num_potions,
+                        "remaining_ml": remaining_ml
                     })
 
     return results
