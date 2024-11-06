@@ -54,36 +54,43 @@ def search_orders(
     time is 5 total line items.
     """
     items_per_page = 5
-    page = []
-    with db.engine.begin() as connection:
-        carts = connection.execute(sqlalchemy.text("""
+    page = search_page
+    result = []
+    
+    int_query ="""
         SELECT 
         cart_id, customer_name, item_sku,
         (price * quantity) AS line_item_total,
         timestamp 
         FROM cart_items
-        LIMIT 5""")).fetchall()
+        WHERE customer_name ILIKE %s AND item_sku ILIKE %s
+        ORDER BY {sort_col} {sort_order}
+        LIMIT %s OFFSET %s"""
+    
+    query = int_query.format(
+        sort_col=sort_col.value,
+        sort_order = sort_order.value)
+    
+    with db.engine.begin() as conn:
+        carts = conn.execute(sqlalchemy.text(query),(
+            f"%{customer_name}%",
+            f"%{potion_sku}%",
+            items_per_page,
+            page * items_per_page
+        )).fetchall()
 
         for cart in carts :
-            next_page = str(page +1) if len(carts) ==items_per_page else ""
-            previous_page = str(page -1) if page >0 else ""
-            page.append( {
-
-
-                "previous": "",
-                "next": "",
-                "results": [
-            {
+        
+            result.append({
                 "line_item_id": cart.cart_id,
                 "item_sku": cart.item_sku,
                 "customer_name": cart.customer_name,
                 "line_item_total": cart.line_item_total,
                 "timestamp": cart.timestamp,
-            }
-        ],
+            })
+    next_page = page + 1 if len(cart ==items_per_page) else None
+    previous_page = page -1 if page >0 else None
             
-    }
-)   
     return{
         "previous": previous_page,
         "next": next_page,
