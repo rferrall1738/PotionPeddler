@@ -63,21 +63,21 @@ def search_orders(
         (price * quantity) AS line_item_total,
         timestamp 
         FROM cart_items
-        WHERE customer_name ILIKE %s AND item_sku ILIKE %s
+        WHERE customer_name ILIKE :customer_name AND item_sku ILIKE :item_sku
         ORDER BY {sort_col} {sort_order}
-        LIMIT %s OFFSET %s"""
+        LIMIT :items_per_page OFFSET :offset"""
     
     query = int_query.format(
         sort_col=sort_col.value,
         sort_order = sort_order.value)
     
     with db.engine.begin() as conn:
-        carts = conn.execute(sqlalchemy.text(query),(
-            f"%{customer_name}%",
-            f"%{potion_sku}%",
-            items_per_page,
-            page * items_per_page
-        )).fetchall()
+        carts = conn.execute(sqlalchemy.text(query),{
+            "customer_name":f"%{customer_name}%",
+            "item_sku":f"%{potion_sku}%",
+            "items_per_page":items_per_page,
+            "offset":page * items_per_page
+        }).fetchall()
 
         for cart in carts :
         
@@ -88,7 +88,7 @@ def search_orders(
                 "line_item_total": cart.line_item_total,
                 "timestamp": cart.timestamp,
             })
-    next_page = page + 1 if len(cart ==items_per_page) else None
+    next_page = page + 1 if len(carts) ==items_per_page else None
     previous_page = page -1 if page >0 else None
             
     return{

@@ -92,10 +92,10 @@ def get_bottle_plan():
 
                     connection.execute(sqlalchemy.text("""
 
-                    INSERT INTO account_transactions (num_potions, description, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml)
-                    VALUES (:num_potions, num_red_ml,num_blue_ml,num_gren_ml,num_dark_ml)
-                    """),{"quantity":num_potions,
-                          "potion_type":potion_data["potion_type"]})
+                    INSERT INTO account_transactions (num_potions, description)
+                    VALUES (:num_potions, :description)
+                    """),{"num_potions":num_potions,
+                          "description":"Bottled " + str(num_potions) + " potions of type " + potion_name})
 
                     results.append({
                         "potion_type": potion_data["potion_type"],
