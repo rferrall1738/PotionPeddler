@@ -52,55 +52,39 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
-    potion_ml = 100
     results = []
 
     potion_types = {
-        "green": {"ml_column": "num_green_ml", "potion_column": "num_green_potions", "potion_type": [0, 1, 0, 0]},
-        "red": {"ml_column": "num_red_ml", "potion_column": "num_red_potions", "potion_type": [1, 0, 0, 0]},
-        "blue": {"ml_column": "num_blue_ml", "potion_column": "num_blue_potions", "potion_type": [0, 0, 1, 0]},
-        "dark": {"ml_column": "num_dark_ml", "potion_column": "num_dark_potions", "potion_type": [0, 0, 0, 1]}
+       "green": {"potion_column": "green_potions_possible", "potion_type": [0, 100, 0, 0]},
+        "red": {"potion_column": "red_potions_possible", "potion_type": [100, 0, 0, 0]},
+        "blue": {"potion_column": "blue_potions_possible", "potion_type": [0, 0, 100, 0]},
+        "dark": {"potion_column": "dark_potions_possible", "potion_type": [0, 0, 0, 100]}
     }
 
     
 
     with db.engine.begin() as connection:
-        for  potion_name,potion_data in potion_types.items():
-            potion_inventory = connection.execute(sqlalchemy.text(f"""
-                SELECT {potion_data['ml_column']}, {potion_data['potion_column']} 
-                FROM global_inventory 
-                WHERE id= :id 
+            potion_inventory = connection.execute(sqlalchemy.text("""
+            SELECT id, red_potions_possible, green_potions_possible, blue_potions_possible, dark_potions_possible
+            FROM potion_inventory
+            WHERE id= :id 
             """), {"id":6}).fetchone()
 
             if potion_inventory:
-                num_potion_ml = potion_inventory[0]
+                for potion_name, potion_data, in potion_types.items():
+                    num_potions = getattr(potion_inventory, potion_data["potion_column"])
 
-                if num_potion_ml >= potion_ml:
-                    num_potions = num_potion_ml // potion_ml
-                    remaining_ml = num_potion_ml % potion_ml
+                    if num_potions > 0 :
 
-                    connection.execute(sqlalchemy.text(f"""
-                        UPDATE global_inventory
-                        SET {potion_data['potion_column']} = {potion_data['potion_column']} + :num_potions, 
-                            {potion_data['ml_column']} = :remaining_ml
-                        WHERE id = :id
-                    """), {
-                        "num_potions": num_potions,
-                        "remaining_ml": remaining_ml,
-                        "id": 6
-                    })
-
-                    connection.execute(sqlalchemy.text("""
-
-                    INSERT INTO account_transactions (num_potions, description)
-                    VALUES (:num_potions, :description)
-                    """),{"num_potions":num_potions,
+                        connection.execute(sqlalchemy.text("""
+                        INSERT INTO account_transactions (num_potions, description)
+                        VALUES (:num_potions, :description)
+                        """),{"num_potions":num_potions,
                           "description":"Bottled " + str(num_potions) + " potions of type " + potion_name})
 
                     results.append({
                         "potion_type": potion_data["potion_type"],
                         "quantity": num_potions,
-                        "remaining_ml": remaining_ml
                     })
 
     return results
