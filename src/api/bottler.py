@@ -68,7 +68,7 @@ def get_bottle_plan():
             SELECT id, red_potions_possible, green_potions_possible, blue_potions_possible, dark_potions_possible
             FROM potion_inventory
             WHERE id= :id 
-            """), {"id":6}).fetchone()
+            """), {"id":7}).fetchone()
 
             if potion_inventory:
                 for potion_name, potion_data, in potion_types.items():

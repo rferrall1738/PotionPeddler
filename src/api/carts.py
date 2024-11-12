@@ -138,7 +138,7 @@ class CartItem(BaseModel):
     quantity: int
 
 
-@router.post("/{cart_id}/items/{item_sku}") ###broken
+@router.post("/{cart_id}/items/{item_sku}") 
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     
     with db.engine.begin() as connection:
