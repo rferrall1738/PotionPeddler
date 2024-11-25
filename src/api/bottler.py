@@ -48,7 +48,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     return "OK"
 
 @router.post("/plan")
-def get_bottle_plan():
+def get_bottle_plan(id:int):
     """
     Go from barrel to bottle.
     """
@@ -73,7 +73,7 @@ def get_bottle_plan():
             if potion_inventory:
                 for potion_name, potion_data, in potion_types.items():
                     available_ml = getattr(potion_inventory, potion_data["potion_column"])
-                    ml_potion = getattr(potion_inventory, potion_data["potion_column"])
+                    ml_potion = potion_data["potion_column"]
 
                     num_potions = available_ml//ml_potion
 
