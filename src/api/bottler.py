@@ -23,10 +23,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         for potion in potions_delivered:
     
             potion_data = {
-                "red": {"ml_column": "num_red_ml", "potion_column": "num_red_potions", "potion_type": [1, 0, 0, 0]},
-                "green": {"ml_column": "num_green_ml", "potion_column": "num_green_potions", "potion_type": [0, 1, 0, 0]},
-                "blue": {"ml_column": "num_blue_ml", "potion_column": "num_blue_potions", "potion_type": [0, 0, 1, 0]},
-                "dark": {"ml_column": "num_dark_ml", "potion_column": "num_dark_potions", "potion_type": [0, 0, 0, 1]}
+                "red": {"ml_column": "num_red_ml", "potion_column": "num_red_potions", "potion_type": [1, 0, 0, 0],"ml_potion": 50},
+                "green": {"ml_column": "num_green_ml", "potion_column": "num_green_potions", "potion_type": [0, 1, 0, 0],"ml_potion": 50},
+                "blue": {"ml_column": "num_blue_ml", "potion_column": "num_blue_potions", "potion_type": [0, 0, 1, 0], "ml_potion": 50},
+                "dark": {"ml_column": "num_dark_ml", "potion_column": "num_dark_potions", "potion_type": [0, 0, 0, 1], "ml_potion": 50}
             }
 
             for potion_name, data in potion_data.items():
@@ -55,10 +55,10 @@ def get_bottle_plan():
     results = []
 
     potion_types = {
-       "green": {"potion_column": "green_potions_possible", "potion_type": [0, 100, 0, 0]},
-        "red": {"potion_column": "red_potions_possible", "potion_type": [100, 0, 0, 0]},
-        "blue": {"potion_column": "blue_potions_possible", "potion_type": [0, 0, 100, 0]},
-        "dark": {"potion_column": "dark_potions_possible", "potion_type": [0, 0, 0, 100]}
+       "green": {"potion_column": "green_potions_possible", "potion_type": [0, 100, 0, 0]},"ml_potion":50,
+        "red": {"potion_column": "red_potions_possible", "potion_type": [100, 0, 0, 0],"ml_potion":50},
+        "blue": {"potion_column": "blue_potions_possible", "potion_type": [0, 0, 100, 0],"ml_potion":50},
+        "dark": {"potion_column": "dark_potions_possible", "potion_type": [0, 0, 0, 100],"ml_potion":50}
     }
 
     
@@ -68,11 +68,14 @@ def get_bottle_plan():
             SELECT id, red_potions_possible, green_potions_possible, blue_potions_possible, dark_potions_possible
             FROM potion_inventory
             WHERE id= :id 
-            """), {"id":7}).fetchone()
+            """), {"id":id}).fetchone()
 
             if potion_inventory:
                 for potion_name, potion_data, in potion_types.items():
-                    num_potions = getattr(potion_inventory, potion_data["potion_column"])
+                    available_ml = getattr(potion_inventory, potion_data["potion_column"])
+                    ml_potion = getattr(potion_inventory, potion_data["potion_column"])
+
+                    num_potions = available_ml//ml_potion
 
                     if num_potions > 0 :
 
